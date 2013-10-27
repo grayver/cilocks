@@ -1,3 +1,5 @@
+package grv.dvt.cilocks_proto;
+
 public class Circle {
 
 	public enum CircleState {
