@@ -9,19 +9,19 @@ public class Circle {
 	private CircleData mData;
 	private int mSectorCount;
 
-	private float mAngle;
+	private float mAngleRad;
 	private CircleState mState;
 
 	public Circle(int size, int[] colorIndexes, int[] symbolIndexes) {
 		this.mData = new CircleData(size, colorIndexes, symbolIndexes);
 		this.mSectorCount = size;
 
-		this.mAngle = 0;
+		this.mAngleRad = 0;
 		this.mState = CircleState.IDLE;
 	}
 
-	public float getAngle() {
-		return this.mAngle;
+	public float getAngleRad() {
+		return this.mAngleRad;
 	}
 
 	public int getSectorCount() {

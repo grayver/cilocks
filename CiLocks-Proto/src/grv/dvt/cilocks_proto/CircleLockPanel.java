@@ -18,7 +18,16 @@ public class CircleLockPanel extends SurfaceView implements
 		getHolder().addCallback(this);
 		this.mThread = new MainThread(getHolder(), this);
 		setFocusable(true);
+	}
 
+	@Override
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,
+			int height) {
+
+	}
+
+	@Override
+	public void surfaceCreated(SurfaceHolder holder) {
 		LockData initData = new LockData();
 		initData.columnCount = 6;
 		initData.rowCount = 3;
@@ -31,19 +40,11 @@ public class CircleLockPanel extends SurfaceView implements
 
 		Point size = new Point(this.getWidth(), this.getHeight());
 		this.mVisualizer = new CircleLockVisualizer((float) size.x / 2,
-				(float) size.y / 2, (float) 20, ((float) size.x / 2) - 20,
+				(float) size.y / 2, 80f, ((float) size.x / 2) - 20,
 				initData.rowCount);
-	}
-
-	@Override
-	public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void surfaceCreated(SurfaceHolder arg0) {
+		
 		this.mThread.setRunning(true);
-		this.mThread.run();
+		this.mThread.start();
 	}
 
 	@Override
@@ -62,7 +63,7 @@ public class CircleLockPanel extends SurfaceView implements
 	@Override
 	protected void onDraw(Canvas canvas) {
 		canvas.drawColor(Color.BLACK);
-		//this.mVisualizer.draw(this.mCircleLock, canvas);
+		this.mVisualizer.draw(this.mCircleLock, canvas);
 	}
 
 }
