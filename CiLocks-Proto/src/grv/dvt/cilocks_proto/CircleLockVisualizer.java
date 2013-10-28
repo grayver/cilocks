@@ -56,10 +56,8 @@ public class CircleLockVisualizer {
 
 		Paint sectorPaint = new Paint();
 		sectorPaint.setAntiAlias(true);
-		sectorPaint.setStyle(Paint.Style.STROKE);
-		sectorPaint.setStrokeWidth(1);
-		sectorPaint.setColor(Color.YELLOW);
-
+		sectorPaint.setStrokeWidth(2);
+		
 		RectF innerRect = new RectF(this.mCenterX - innerRadius, this.mCenterY
 				- innerRadius, this.mCenterX + innerRadius, this.mCenterY
 				+ innerRadius);
@@ -83,6 +81,15 @@ public class CircleLockVisualizer {
 			path.lineTo(this.mCenterX + outerRadius * FloatMath.cos(startAngleRad),
 					this.mCenterY + outerRadius * FloatMath.sin(startAngleRad));
 			path.close();
+			
+			// draw contour
+			sectorPaint.setStyle(Paint.Style.STROKE);
+			sectorPaint.setColor(Color.YELLOW);
+			canvas.drawPath(path, sectorPaint);
+			
+			// fill
+			sectorPaint.setStyle(Paint.Style.FILL);
+			sectorPaint.setColor(Color.DKGRAY);
 			canvas.drawPath(path, sectorPaint);
 		}
 
