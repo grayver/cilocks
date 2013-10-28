@@ -2,13 +2,14 @@ package grv.dvt.cilocks_proto;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 public class CircleLockPanel extends SurfaceView implements
 		SurfaceHolder.Callback {
 
+	private ViewAspect mViewAspect;
+	
 	private MainThread mThread;
 	private CircleLock mCircleLock;
 	private CircleLockVisualizer mVisualizer;
@@ -23,7 +24,8 @@ public class CircleLockPanel extends SurfaceView implements
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
-
+		this.mViewAspect.setSize(width, height);
+		this.mVisualizer.init(this.mViewAspect);
 	}
 
 	@Override
@@ -38,10 +40,8 @@ public class CircleLockPanel extends SurfaceView implements
 
 		this.mCircleLock = new CircleLock(initData);
 
-		Point size = new Point(this.getWidth(), this.getHeight());
-		this.mVisualizer = new CircleLockVisualizer((float) size.x / 2,
-				(float) size.y / 2, 80f, ((float) size.x / 2) - 20,
-				initData.rowCount);
+		this.mViewAspect = new ViewAspect(this.getWidth(), this.getHeight());
+		this.mVisualizer = new CircleLockVisualizer(this.mViewAspect, initData.rowCount);
 		
 		this.mThread.setRunning(true);
 		this.mThread.start();

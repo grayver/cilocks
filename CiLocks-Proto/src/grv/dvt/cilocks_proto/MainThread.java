@@ -1,4 +1,6 @@
 package grv.dvt.cilocks_proto;
+
+import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -6,7 +8,7 @@ import android.view.SurfaceHolder;
 public class MainThread extends Thread {
 
 	private static final String TAG = MainThread.class.getSimpleName();
-	
+
 	private boolean mIsRunning;
 
 	private SurfaceHolder mSurfaceHolder;
@@ -22,6 +24,7 @@ public class MainThread extends Thread {
 		this.mIsRunning = isRunning;
 	}
 
+	@SuppressLint("WrongCall")
 	@Override
 	public void run() {
 		Canvas canvas;
@@ -30,8 +33,10 @@ public class MainThread extends Thread {
 			canvas = null;
 			try {
 				canvas = this.mSurfaceHolder.lockCanvas();
-				synchronized (this.mSurfaceHolder) {
-					this.mPanel.onDraw(canvas);
+				if (canvas != null) {
+					synchronized (this.mSurfaceHolder) {
+						this.mPanel.onDraw(canvas);
+					}
 				}
 			} finally {
 				if (canvas != null) {

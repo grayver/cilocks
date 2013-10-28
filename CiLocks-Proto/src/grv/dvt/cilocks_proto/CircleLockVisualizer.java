@@ -10,37 +10,35 @@ import android.util.Log;
 
 public class CircleLockVisualizer {
 
-	private static final String TAG = CircleLockVisualizer.class
-			.getSimpleName();
-
 	private float mCenterX;
 	private float mCenterY;
 
 	private float mMinRadius;
 	private float mMaxRadius;
+	private float mHoleRadius;
 
 	private float[] mCircleWidth;
 
-	public CircleLockVisualizer(float centerX, float centerY, float minRadius,
-			float maxRadius, int circleCount) {
-
-		Log.d(TAG,
-				String.format(
-						"Init visualizer: cx=%.2f cy=%.2f minr=%.2f maxr=%.2f count=%d",
-						centerX, centerY, minRadius, maxRadius, circleCount));
-
-		this.mCenterX = centerX;
-		this.mCenterY = centerY;
-
-		this.mMinRadius = minRadius;
-		this.mMaxRadius = maxRadius;
-
-		float circleWidth = (this.mMaxRadius - this.mMinRadius) / circleCount;
+	public CircleLockVisualizer(ViewAspect viewAspect, int circleCount) {
 		this.mCircleWidth = new float[circleCount];
-		for (int i = 0; i < circleCount; i++)
-			this.mCircleWidth[i] = circleWidth;
+		init(viewAspect);
 	}
 
+	public void init(ViewAspect viewAspect) {
+		this.mCenterX = viewAspect.getCenterX();
+		this.mCenterY = viewAspect.getCenterY();
+		
+		float minDimension = Math.min(viewAspect.getWidth(), viewAspect.getHeight());
+		
+		this.mMaxRadius = 0.43f * minDimension;
+		this.mMinRadius = 0.17f * minDimension;
+		this.mHoleRadius= 0.1f * minDimension;
+		
+		float circleWidth = (this.mMaxRadius - this.mMinRadius) / this.mCircleWidth.length;
+		for (int i = 0; i < this.mCircleWidth.length; i++)
+			this.mCircleWidth[i] = circleWidth;
+	}
+	
 	public void draw(CircleLock circleLock, Canvas canvas) {
 		float innerRadius = this.mMinRadius;
 		for (int i = 0; i < circleLock.getCircleCount(); i++) {
