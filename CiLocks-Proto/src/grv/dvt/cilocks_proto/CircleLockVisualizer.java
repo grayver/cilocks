@@ -5,8 +5,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
-import android.util.FloatMath;
-import android.util.Log;
 
 public class CircleLockVisualizer {
 
@@ -73,11 +71,11 @@ public class CircleLockVisualizer {
 			
 			Path path = new Path();
 			path.addArc(outerRect, startAngleDeg, stepAngleDeg);
-			path.lineTo(this.mCenterX + innerRadius * FloatMath.cos(endAngleRad),
-					this.mCenterY + innerRadius * FloatMath.sin(endAngleRad));
+			path.lineTo(this.mCenterX + innerRadius * (float)Math.cos(endAngleRad),
+					this.mCenterY + innerRadius * (float)Math.sin(endAngleRad));
 			path.arcTo(innerRect, endAngleDeg, -stepAngleDeg);
-			path.lineTo(this.mCenterX + outerRadius * FloatMath.cos(startAngleRad),
-					this.mCenterY + outerRadius * FloatMath.sin(startAngleRad));
+			path.lineTo(this.mCenterX + outerRadius * (float)Math.cos(startAngleRad),
+					this.mCenterY + outerRadius * (float)Math.sin(startAngleRad));
 			path.close();
 			
 			// draw contour
@@ -92,4 +90,9 @@ public class CircleLockVisualizer {
 		}
 
 	}
+	
+	public void processVectors(TouchVectorField field) {
+		//
+	}
+	
 }

@@ -30,5 +30,4 @@ public class CircleLockActivity extends Activity {
 		Log.d(TAG, "Stopping...");
 		super.onStop();
 	}
-
 }
