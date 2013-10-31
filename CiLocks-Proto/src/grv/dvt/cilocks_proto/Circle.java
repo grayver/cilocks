@@ -24,6 +24,15 @@ public class Circle {
 		return this.mAngleRad;
 	}
 
+	public void setAngleRad(float value) {
+		if (value >= 2 * Math.PI)
+			value -= 2 * Math.PI;
+		if (value < 0)
+			value += 2 * Math.PI;
+		
+		this.mAngleRad = value;
+	}
+	
 	public int getSectorCount() {
 		return this.mSectorCount;
 	}
@@ -34,6 +43,10 @@ public class Circle {
 
 	public CircleState getState() {
 		return this.mState;
+	}
+	
+	public void setState(CircleState value) {
+		this.mState = value;
 	}
 
 	/**

@@ -100,7 +100,7 @@ public class CircleLockVisualizer {
 
 	}
 
-	private float getTangentalComponent(PointF baseVector, PointF vector) {
+	private float getTangentialComponent(PointF baseVector, PointF vector) {
 		return (baseVector.x * vector.x + baseVector.y * vector.y)
 				/ (float) Math.sqrt(baseVector.x * baseVector.x + baseVector.y * baseVector.y);
 	}
@@ -110,25 +110,83 @@ public class CircleLockVisualizer {
 				/ (float) Math.sqrt(baseVector.x * baseVector.x + baseVector.y * baseVector.y);
 	}
 
+	private float getDistanceSquare(PointF point1, PointF point2) {
+		return (point1.x - point2.x) * (point1.x - point2.x)
+				+ (point1.y - point2.y) * (point1.y - point2.y);
+	}
+	
 	public void processVectors(TouchVectorField field, CircleLock circleLock) {
 		for (int i = 0; i < circleLock.getCircleCount(); i++) {
 			Circle circle = circleLock.getCircle(i);
-
+			int touchCount = 0;
+			
 			for (int j = 0; j < field.getVectorCount(); j++) {
 				TouchVector vector = field.getVector(j);
 
 				switch (circle.getState()) {
 				case ROLLING:
-
+					float initDistSquare = getDistanceSquare(vector.init, this.mCenter);
+					if (initDistSquare >= this.mCircleBoundSquares[i]
+							&& initDistSquare < this.mCircleBoundSquares[i + 1]
+									&& vector.action == TouchVector.Action.UNKNOWN)
+						vector.action = TouchVector.Action.ROLL;
+					
+					if (vector.action == TouchVector.Action.ROLL) {
+						float prevDistSquare = getDistanceSquare(vector.previous, this.mCenter);
+						if (prevDistSquare >= this.mCircleBoundSquares[i]
+								&& prevDistSquare < this.mCircleBoundSquares[i + 1]) {
+							float normalComponent = getNormalComponent(
+									new PointF(vector.previous.x - this.mCenter.x, vector.previous.y - this.mCenter.y),
+									new PointF(vector.last.x - vector.previous.x, vector.last.y - vector.previous.y));
+							float radius = (float)Math.sqrt(getDistanceSquare(vector.previous, this.mCenter));
+							circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
+							touchCount++;
+						}
+					}
 					break;
+					
 				case IDLE:
+					float prevDistSquare = getDistanceSquare(vector.previous, this.mCenter);
+					if (prevDistSquare >= this.mCircleBoundSquares[i]
+							&& prevDistSquare < this.mCircleBoundSquares[i + 1]
+									&& vector.action == TouchVector.Action.UNKNOWN) {
+						float normalComponent = getNormalComponent(
+								new PointF(vector.init.x - this.mCenter.x, vector.init.y - this.mCenter.y),
+								new PointF(vector.last.x - vector.init.x, vector.last.y - vector.init.y));
+						float tangentialComponent = getTangentialComponent(
+								new PointF(vector.init.x - this.mCenter.x, vector.init.y - this.mCenter.y),
+								new PointF(vector.last.x - vector.init.x, vector.last.y - vector.init.y));
+						
+						if (normalComponent > 0.5f * this.mCircleWidth[i]) {
+							vector.action = TouchVector.Action.ROLL;
+							circle.setState(CircleState.ROLLING);
+							
+							float radius = (float)Math.sqrt(getDistanceSquare(vector.init, this.mCenter));
+							circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
+						} else if (tangentialComponent > 0.5f * this.mCircleWidth[i]) {
+							vector.action = TouchVector.Action.SWAP;
+							circle.setState(CircleState.SWAPPING);
+						}
+						
+						touchCount++;
+					}
 					break;
+					
 				case SWAPPING:
 				case ANIMATING:
 					break;
 				}
 			}
+			
+			if (circle.getState() == CircleState.ROLLING && touchCount == 0)
+				this.releaseCircle(circle);
 		}
+	}
+	
+	private void releaseCircle(Circle circle) {
+		float stepAngleRad = (float) (2 * Math.PI / circle.getSectorCount());
+		circle.setAngleRad(Math.round(circle.getAngleRad() / stepAngleRad) * stepAngleRad);
+		circle.setState(CircleState.IDLE);
 	}
 
 }
