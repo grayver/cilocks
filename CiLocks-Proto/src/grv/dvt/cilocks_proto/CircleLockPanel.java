@@ -86,7 +86,7 @@ public class CircleLockPanel extends SurfaceView implements
 			for (int i = 0; i < MotionEventCompat.getPointerCount(event); i++)
 				this.mVectorField.moveVector(MotionEventCompat.getPointerId(event, i),
 					new PointF(MotionEventCompat.getX(event, i), MotionEventCompat.getY(event, i)));
-			this.mVisualizer.processVectors(this.mVectorField);
+			this.mVisualizer.processVectors(this.mVectorField, this.mCircleLock);
 			break;
 		}
 
