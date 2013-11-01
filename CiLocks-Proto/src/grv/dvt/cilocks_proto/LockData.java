@@ -5,4 +5,7 @@ public class LockData {
 	int columnCount;
 	public int[][] colorIndexes;
 	public int[][] symbolIndexes;
+	
+	int keyColorCount;
+	public int[] keyColorIndexes;
 }

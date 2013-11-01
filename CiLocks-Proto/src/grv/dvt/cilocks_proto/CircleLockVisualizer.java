@@ -7,9 +7,12 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.util.Log;
 
 public class CircleLockVisualizer {
 
+	private static final String TAG = CircleLockVisualizer.class.getSimpleName();
+	
 	private PointF mCenter;
 
 	private float mMinRadius;
@@ -20,12 +23,17 @@ public class CircleLockVisualizer {
 	private float[] mCircleBoundSquares;
 
 	public CircleLockVisualizer(ViewAspect viewAspect, int circleCount) {
+		Log.d(TAG, String.format("Create visualizer. Circle count: %d", circleCount));
+		
 		this.mCircleWidth = new float[circleCount];
 		this.mCircleBoundSquares = new float[circleCount + 1];
+		this.mCenter = new PointF();
 		init(viewAspect);
 	}
 
 	public void init(ViewAspect viewAspect) {
+		Log.d(TAG, String.format("Init visualizer. Aspect size x=%.0f y=%.0f", viewAspect.getWidth(), viewAspect.getHeight()));
+		
 		this.mCenter.x = viewAspect.getCenterX();
 		this.mCenter.y = viewAspect.getCenterY();
 
@@ -33,7 +41,7 @@ public class CircleLockVisualizer {
 
 		this.mMaxRadius = 0.43f * minDimension;
 		this.mMinRadius = 0.17f * minDimension;
-		this.mHoleRadius = 0.1f * minDimension;
+		this.mHoleRadius = 0.08f * minDimension;
 
 		float circleWidth = (this.mMaxRadius - this.mMinRadius) / this.mCircleWidth.length;
 		for (int i = 0; i < this.mCircleWidth.length; i++) {
@@ -50,8 +58,45 @@ public class CircleLockVisualizer {
 			this.drawCircle(circleLock.getCircle(i), canvas, innerRadius, this.mCircleWidth[i]);
 			innerRadius += this.mCircleWidth[i];
 		}
+
+		this.drawHole(circleLock, canvas);
 	}
 
+	private void drawHole(CircleLock circleLock, Canvas canvas) {
+		Paint holePaint = new Paint();
+		holePaint.setAntiAlias(true);
+		holePaint.setStrokeWidth(2);
+		
+		RectF holeRect = new RectF(this.mCenter.x - this.mHoleRadius, this.mCenter.y - this.mHoleRadius,
+				this.mCenter.x + this.mHoleRadius, this.mCenter.y + this.mHoleRadius);
+		
+		float stepAngleDeg = 360f / circleLock.getKeyColorCount();
+		float stepAngleRad = (float) (2 * Math.PI / circleLock.getKeyColorCount());
+		for (int i = 0; i < circleLock.getKeyColorCount(); i++) {
+			float startAngleDeg = i * stepAngleDeg;
+			float startAngleRad = i * stepAngleRad;
+			
+			Path path = new Path();
+			path.moveTo(this.mCenter.x, this.mCenter.y);
+			path.lineTo(
+					this.mCenter.x + this.mHoleRadius * (float) Math.cos(startAngleRad),
+					this.mCenter.y + this.mHoleRadius * (float) Math.sin(startAngleRad));
+			path.arcTo(holeRect, startAngleDeg, stepAngleDeg);
+			path.lineTo(this.mCenter.x, this.mCenter.y);
+			path.close();
+			
+			// draw contour
+			holePaint.setStyle(Paint.Style.STROKE);
+			holePaint.setColor(Color.YELLOW);
+			canvas.drawPath(path, holePaint);
+
+			// fill
+			holePaint.setStyle(Paint.Style.FILL);
+			holePaint.setColor(Color.DKGRAY);
+			canvas.drawPath(path, holePaint);
+		}
+	}
+	
 	private void drawCircle(Circle circle, Canvas canvas, float innerRadius,
 			float width) {
 		float outerRadius = innerRadius + width;

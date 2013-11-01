@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.support.v4.view.MotionEventCompat;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -12,6 +13,8 @@ import android.view.SurfaceView;
 public class CircleLockPanel extends SurfaceView implements
 		SurfaceHolder.Callback {
 
+	private static final String TAG = CircleLockPanel.class.getSimpleName();
+	
 	private ViewAspect mViewAspect;
 
 	private MainThread mThread;
@@ -42,6 +45,8 @@ public class CircleLockPanel extends SurfaceView implements
 				{ 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 } };
 		initData.colorIndexes = new int[][] { { 0, 0, 0, 0, 0, 0 },
 				{ 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 } };
+		initData.keyColorCount = 4;
+		initData.keyColorIndexes = new int[] { 0, 0, 0, 0 };
 
 		this.mCircleLock = new CircleLock(initData);
 
@@ -90,7 +95,7 @@ public class CircleLockPanel extends SurfaceView implements
 			break;
 		}
 
-		return super.onTouchEvent(event);
+		return true;
 	}
 
 	@Override
