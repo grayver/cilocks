@@ -8,10 +8,15 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
+import android.util.SparseIntArray;
 
 public class CircleLockVisualizer {
 
 	private static final String TAG = CircleLockVisualizer.class.getSimpleName();
+	
+	private AnimationPool mAnimationPool;
+	
+	private SparseIntArray mSectorColors;
 	
 	private PointF mCenter;
 
@@ -22,8 +27,16 @@ public class CircleLockVisualizer {
 	private float[] mCircleWidth;
 	private float[] mCircleBoundSquares;
 
-	public CircleLockVisualizer(ViewAspect viewAspect, int circleCount) {
+	public CircleLockVisualizer(ViewAspect viewAspect, AnimationPool animationPool, int circleCount) {
 		Log.d(TAG, String.format("Create visualizer. Circle count: %d", circleCount));
+		
+		this.mSectorColors = new SparseIntArray();
+		this.mSectorColors.put(0, Color.parseColor("#935639"));
+		this.mSectorColors.put(1, Color.parseColor("#808581"));
+		this.mSectorColors.put(2, Color.parseColor("#7E5F5A"));
+		this.mSectorColors.put(3, Color.parseColor("#A3A5A4"));
+		
+		this.mAnimationPool = animationPool;
 		
 		this.mCircleWidth = new float[circleCount];
 		this.mCircleBoundSquares = new float[circleCount + 1];
@@ -44,6 +57,7 @@ public class CircleLockVisualizer {
 		this.mHoleRadius = 0.08f * minDimension;
 
 		float circleWidth = (this.mMaxRadius - this.mMinRadius) / this.mCircleWidth.length;
+		Log.d(TAG, String.format("Circle width %.2f", circleWidth));
 		for (int i = 0; i < this.mCircleWidth.length; i++) {
 			this.mCircleWidth[i] = circleWidth;
 			this.mCircleBoundSquares[i] = (this.mMinRadius + i * circleWidth)
@@ -53,10 +67,12 @@ public class CircleLockVisualizer {
 	}
 
 	public void draw(CircleLock circleLock, Canvas canvas) {
-		float innerRadius = this.mMinRadius;
-		for (int i = 0; i < circleLock.getCircleCount(); i++) {
-			this.drawCircle(circleLock.getCircle(i), canvas, innerRadius, this.mCircleWidth[i]);
-			innerRadius += this.mCircleWidth[i];
+		synchronized (circleLock) {
+			float innerRadius = this.mMinRadius;
+			for (int i = 0; i < circleLock.getCircleCount(); i++) {
+				this.drawCircle(circleLock.getCircle(i), canvas, innerRadius, this.mCircleWidth[i]);
+				innerRadius += this.mCircleWidth[i];
+			}
 		}
 
 		this.drawHole(circleLock, canvas);
@@ -92,7 +108,7 @@ public class CircleLockVisualizer {
 
 			// fill
 			holePaint.setStyle(Paint.Style.FILL);
-			holePaint.setColor(Color.DKGRAY);
+			holePaint.setColor(this.mSectorColors.get(circleLock.getKeyColor(i)));
 			canvas.drawPath(path, holePaint);
 		}
 	}
@@ -134,12 +150,12 @@ public class CircleLockVisualizer {
 
 			// draw contour
 			sectorPaint.setStyle(Paint.Style.STROKE);
-			sectorPaint.setColor(Color.YELLOW);
+			sectorPaint.setColor(circle.getState() == CircleState.ROLLING ? Color.GREEN : Color.YELLOW);
 			canvas.drawPath(path, sectorPaint);
 
 			// fill
 			sectorPaint.setStyle(Paint.Style.FILL);
-			sectorPaint.setColor(Color.DKGRAY);
+			sectorPaint.setColor(this.mSectorColors.get(circle.getData().getColorIndex(i)));
 			canvas.drawPath(path, sectorPaint);
 		}
 
@@ -168,49 +184,89 @@ public class CircleLockVisualizer {
 			for (int j = 0; j < field.getVectorCount(); j++) {
 				TouchVector vector = field.getVector(j);
 
+				float initDistSquare = getDistanceSquare(vector.init, this.mCenter);
+				float prevDistSquare = getDistanceSquare(vector.previous, this.mCenter);
+				boolean isInitiatedHere = (initDistSquare >= this.mCircleBoundSquares[i]
+						&& initDistSquare < this.mCircleBoundSquares[i + 1]);
+				boolean isPrevHere = (prevDistSquare >= this.mCircleBoundSquares[i]
+						&& prevDistSquare < this.mCircleBoundSquares[i + 1]);
+				
 				switch (circle.getState()) {
 				case ROLLING:
-					float initDistSquare = getDistanceSquare(vector.init, this.mCenter);
-					if (initDistSquare >= this.mCircleBoundSquares[i]
-							&& initDistSquare < this.mCircleBoundSquares[i + 1]
-									&& vector.action == TouchVector.Action.UNKNOWN)
+					
+					if (isInitiatedHere && vector.action == TouchVector.Action.UNKNOWN)
 						vector.action = TouchVector.Action.ROLL;
 					
 					if (vector.action == TouchVector.Action.ROLL) {
-						float prevDistSquare = getDistanceSquare(vector.previous, this.mCenter);
-						if (prevDistSquare >= this.mCircleBoundSquares[i]
-								&& prevDistSquare < this.mCircleBoundSquares[i + 1]) {
+						if (isPrevHere && isInitiatedHere) {
 							float normalComponent = getNormalComponent(
 									new PointF(vector.previous.x - this.mCenter.x, vector.previous.y - this.mCenter.y),
 									new PointF(vector.last.x - vector.previous.x, vector.last.y - vector.previous.y));
 							float radius = (float)Math.sqrt(getDistanceSquare(vector.previous, this.mCenter));
-							circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
+							synchronized (circleLock) {
+								circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
+							}
 							touchCount++;
 						}
 					}
 					break;
 					
 				case IDLE:
-					float prevDistSquare = getDistanceSquare(vector.previous, this.mCenter);
-					if (prevDistSquare >= this.mCircleBoundSquares[i]
-							&& prevDistSquare < this.mCircleBoundSquares[i + 1]
-									&& vector.action == TouchVector.Action.UNKNOWN) {
-						float normalComponent = getNormalComponent(
-								new PointF(vector.init.x - this.mCenter.x, vector.init.y - this.mCenter.y),
-								new PointF(vector.last.x - vector.init.x, vector.last.y - vector.init.y));
-						float tangentialComponent = getTangentialComponent(
-								new PointF(vector.init.x - this.mCenter.x, vector.init.y - this.mCenter.y),
-								new PointF(vector.last.x - vector.init.x, vector.last.y - vector.init.y));
+					
+					if (isPrevHere) {
 						
-						if (normalComponent > 0.5f * this.mCircleWidth[i]) {
-							vector.action = TouchVector.Action.ROLL;
+						if (vector.action == TouchVector.Action.UNKNOWN) {
+							float normalComponent = getNormalComponent(
+									new PointF(vector.init.x - this.mCenter.x, vector.init.y - this.mCenter.y),
+									new PointF(vector.last.x - vector.init.x, vector.last.y - vector.init.y));
+							float tangentialComponent = getTangentialComponent(
+									new PointF(vector.init.x - this.mCenter.x, vector.init.y - this.mCenter.y),
+									new PointF(vector.last.x - vector.init.x, vector.last.y - vector.init.y));
+							
+							if (Math.abs(normalComponent) > 0.5f * this.mCircleWidth[i]) {
+								vector.action = TouchVector.Action.ROLL;
+								circle.setState(CircleState.ROLLING);
+								
+								float radius = (float)Math.sqrt(getDistanceSquare(vector.init, this.mCenter));
+								synchronized (circleLock) {
+									circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
+								}
+							} else if (Math.abs(tangentialComponent) > 0.5f * this.mCircleWidth[i]) {
+								vector.action = TouchVector.Action.SWAP;
+								
+								float initAngleRad = (float)Math.atan2(vector.init.y - this.mCenter.y,
+										vector.init.x - this.mCenter.x);
+								if (initAngleRad < 0)
+									initAngleRad += 2 * Math.PI;
+								
+								float stepAngleRad = (float)(2 * Math.PI / circle.getSectorCount());
+								int sectorIndex = (int)Math.floor(initAngleRad / stepAngleRad);
+								
+								if (tangentialComponent > 0f && i < circleLock.getCircleCount() - 1) {
+									if (circle.isSwappable(circleLock.getCircle(i + 1), sectorIndex)) {
+										synchronized (circleLock) {
+											circle.getData().swap(circleLock.getCircle(i + 1).getData(), sectorIndex);
+										}
+									}
+								} else if (tangentialComponent < 0f && i > 0) {
+									if (circle.isSwappable(circleLock.getCircle(i - 1), sectorIndex)) {
+										synchronized (circleLock) {
+											circle.getData().swap(circleLock.getCircle(i - 1).getData(), sectorIndex);
+										}
+									}
+								}
+								//circle.setState(CircleState.SWAPPING);
+							}
+						} else if (isInitiatedHere && vector.action == TouchVector.Action.ROLL) {
 							circle.setState(CircleState.ROLLING);
 							
-							float radius = (float)Math.sqrt(getDistanceSquare(vector.init, this.mCenter));
-							circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
-						} else if (tangentialComponent > 0.5f * this.mCircleWidth[i]) {
-							vector.action = TouchVector.Action.SWAP;
-							circle.setState(CircleState.SWAPPING);
+							float normalComponent = getNormalComponent(
+									new PointF(vector.previous.x - this.mCenter.x, vector.previous.y - this.mCenter.y),
+									new PointF(vector.last.x - vector.previous.x, vector.last.y - vector.previous.y));
+							float radius = (float)Math.sqrt(getDistanceSquare(vector.previous, this.mCenter));
+							synchronized (circleLock) {
+								circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
+							}
 						}
 						
 						touchCount++;
@@ -224,14 +280,15 @@ public class CircleLockVisualizer {
 			}
 			
 			if (circle.getState() == CircleState.ROLLING && touchCount == 0)
-				this.releaseCircle(circle);
+				synchronized (circleLock) {
+					this.releaseCircle(circle);
+				}
 		}
 	}
 	
 	private void releaseCircle(Circle circle) {
-		float stepAngleRad = (float) (2 * Math.PI / circle.getSectorCount());
-		circle.setAngleRad(Math.round(circle.getAngleRad() / stepAngleRad) * stepAngleRad);
-		circle.setState(CircleState.IDLE);
+		circle.setState(CircleState.ANIMATING);
+		this.mAnimationPool.addAnimator(new CircleRollAnimator(200, circle));
 	}
 
 }

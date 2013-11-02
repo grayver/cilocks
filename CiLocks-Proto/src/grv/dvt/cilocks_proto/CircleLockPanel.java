@@ -16,6 +16,7 @@ public class CircleLockPanel extends SurfaceView implements
 	private static final String TAG = CircleLockPanel.class.getSimpleName();
 	
 	private ViewAspect mViewAspect;
+	private AnimationPool mAnimationPool;
 
 	private MainThread mThread;
 	private CircleLock mCircleLock;
@@ -32,27 +33,36 @@ public class CircleLockPanel extends SurfaceView implements
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
+		Log.d(TAG, "Changing panel");
+		
 		this.mViewAspect.setSize(width, height);
 		this.mVisualizer.init(this.mViewAspect);
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
+		Log.d(TAG, "Creating panel");
+		
 		LockData initData = new LockData();
-		initData.columnCount = 6;
+		initData.columnCount = 8;
 		initData.rowCount = 3;
-		initData.symbolIndexes = new int[][] { { 0, 0, 0, 0, 0, 0 },
-				{ 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 } };
-		initData.colorIndexes = new int[][] { { 0, 0, 0, 0, 0, 0 },
-				{ 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 } };
+		initData.colorIndexes = new int[][] {
+				{ 0, 1, 0, 0, 1, 1, 0, 1 },
+				{ 1, 0, 1, 0, 0, 1, 1, 0 },
+				{ 0, 1, 0, 0, 1, 1, 0, 1 } };
+		initData.symbolIndexes = new int[][] {
+				{ 0, 0, 0, 0, 0, 0, 0, 0 },
+				{ 0, 0, 0, 0, 0, 0, 0, 0 },
+				{ 0, 0, 0, 0, 0, 0, 0, 0 } };
 		initData.keyColorCount = 4;
-		initData.keyColorIndexes = new int[] { 0, 0, 0, 0 };
+		initData.keyColorIndexes = new int[] { 0, 1, 0, 1 };
 
 		this.mCircleLock = new CircleLock(initData);
 
 		this.mViewAspect = new ViewAspect(this.getWidth(), this.getHeight());
+		this.mAnimationPool = new AnimationPool();
 		this.mVisualizer = new CircleLockVisualizer(this.mViewAspect,
-				initData.rowCount);
+				this.mAnimationPool, initData.rowCount);
 		this.mVectorField = new TouchVectorField();
 
 		this.mThread.setRunning(true);
@@ -61,6 +71,8 @@ public class CircleLockPanel extends SurfaceView implements
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder arg0) {
+		Log.d(TAG, "Destroying panel");
+		
 		boolean retry = true;
 		while (retry) {
 			try {
@@ -85,7 +97,8 @@ public class CircleLockPanel extends SurfaceView implements
 			break;
 		case MotionEvent.ACTION_UP:
 		case MotionEvent.ACTION_POINTER_UP:
-			this.mVectorField.releaseVector(MotionEventCompat.getPointerId(event, index));			
+			this.mVectorField.releaseVector(MotionEventCompat.getPointerId(event, index));
+			this.mVisualizer.processVectors(this.mVectorField, this.mCircleLock);
 			break;
 		case MotionEvent.ACTION_MOVE:
 			for (int i = 0; i < MotionEventCompat.getPointerCount(event); i++)
@@ -101,6 +114,7 @@ public class CircleLockPanel extends SurfaceView implements
 	@Override
 	protected void onDraw(Canvas canvas) {
 		canvas.drawColor(Color.BLACK);
+		this.mAnimationPool.updateAnimation();
 		this.mVisualizer.draw(this.mCircleLock, canvas);
 	}
 

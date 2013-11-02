@@ -35,4 +35,10 @@ public class CircleData {
 			this.mSymbolIndexes[i] = symbolBuffer[index];
 		}
 	}
+	
+	public void swap(CircleData data, int index) {
+		int colorIndex = this.mColorIndexes[index];
+		this.mColorIndexes[index] = data.mColorIndexes[index];
+		data.mColorIndexes[index] = colorIndex;
+	}
 }
