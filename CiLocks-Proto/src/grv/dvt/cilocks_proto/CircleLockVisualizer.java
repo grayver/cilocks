@@ -1,13 +1,16 @@
 package grv.dvt.cilocks_proto;
 
 import grv.dvt.cilocks_proto.Circle.CircleState;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
+import android.util.SparseArray;
 import android.util.SparseIntArray;
 
 public class CircleLockVisualizer {
@@ -17,6 +20,7 @@ public class CircleLockVisualizer {
 	private AnimationPool mAnimationPool;
 	
 	private SparseIntArray mSectorColors;
+	private SparseArray<Bitmap> mSectorSymbols;
 	
 	private PointF mCenter;
 
@@ -27,8 +31,11 @@ public class CircleLockVisualizer {
 	private float[] mCircleWidth;
 	private float[] mCircleBoundSquares;
 
-	public CircleLockVisualizer(ViewAspect viewAspect, AnimationPool animationPool, int circleCount) {
+	public CircleLockVisualizer(ViewAspect viewAspect, AnimationPool animationPool,
+			int circleCount, SparseArray<Bitmap> sectorSymbols) {
 		Log.d(TAG, String.format("Create visualizer. Circle count: %d", circleCount));
+		
+		this.mSectorSymbols = sectorSymbols;
 		
 		this.mSectorColors = new SparseIntArray();
 		this.mSectorColors.put(0, Color.parseColor("#935639"));
@@ -116,6 +123,7 @@ public class CircleLockVisualizer {
 	private void drawCircle(Circle circle, Canvas canvas, float innerRadius,
 			float width) {
 		float outerRadius = innerRadius + width;
+		float medRadius = innerRadius + 0.5f * width;
 
 		Paint sectorPaint = new Paint();
 		sectorPaint.setAntiAlias(true);
@@ -136,18 +144,47 @@ public class CircleLockVisualizer {
 			float endAngleDeg = startAngleDeg + stepAngleDeg;
 			float startAngleRad = circle.getAngleRad() + i * stepAngleRad;
 			float endAngleRad = startAngleRad + stepAngleRad;
+			float medAngleRad = startAngleRad + 0.5f * stepAngleRad;
+			float medAngleDeg = startAngleDeg + 0.5f * stepAngleDeg;
 
 			Path path = new Path();
-			path.addArc(outerRect, startAngleDeg, stepAngleDeg);
-			path.lineTo(
-					this.mCenter.x + innerRadius * (float) Math.cos(endAngleRad),
-					this.mCenter.y + innerRadius * (float) Math.sin(endAngleRad));
-			path.arcTo(innerRect, endAngleDeg, -stepAngleDeg);
-			path.lineTo(
-					this.mCenter.x + outerRadius* (float) Math.cos(startAngleRad),
-					this.mCenter.y + outerRadius * (float) Math.sin(startAngleRad));
-			path.close();
+			Matrix symbolMatrix = new Matrix();
+			Bitmap symbol = this.mSectorSymbols.get(circle.getData().getSymbolIndex(i));
+			symbolMatrix.postTranslate(-0.5f * symbol.getWidth(), -0.5f * symbol.getHeight());
+			
+			if (circle.getState() == CircleState.SWAPPING && i == circle.swapSectorIndex) {
+				float rotateScale = (float)Math.abs(Math.cos(circle.swapSectorAngleRad));
 
+				float scaleStepAngleRad = rotateScale * stepAngleRad;
+				float scaleStepAngleDeg = rotateScale * stepAngleDeg;
+				float startScaleAngleRad = medAngleRad - 0.5f * scaleStepAngleRad;
+				float endScaleAngleRad = medAngleRad + 0.5f * scaleStepAngleRad;
+				float startScaleAngleDeg = medAngleDeg - 0.5f * scaleStepAngleDeg;
+				float endScaleAngleDeg = medAngleDeg + 0.5f * scaleStepAngleDeg;
+				
+				path.addArc(outerRect, startScaleAngleDeg, scaleStepAngleDeg);
+				path.lineTo(
+						this.mCenter.x + innerRadius * (float) Math.cos(endScaleAngleRad),
+						this.mCenter.y + innerRadius * (float) Math.sin(endScaleAngleRad));
+				path.arcTo(innerRect, endScaleAngleDeg, -scaleStepAngleDeg);
+				path.lineTo(
+						this.mCenter.x + outerRadius * (float) Math.cos(startScaleAngleRad),
+						this.mCenter.y + outerRadius * (float) Math.sin(startScaleAngleRad));
+				path.close();
+				
+				symbolMatrix.postScale(rotateScale, 1f);
+			} else {
+				path.addArc(outerRect, startAngleDeg, stepAngleDeg);
+				path.lineTo(
+						this.mCenter.x + innerRadius * (float) Math.cos(endAngleRad),
+						this.mCenter.y + innerRadius * (float) Math.sin(endAngleRad));
+				path.arcTo(innerRect, endAngleDeg, -stepAngleDeg);
+				path.lineTo(
+						this.mCenter.x + outerRadius * (float) Math.cos(startAngleRad),
+						this.mCenter.y + outerRadius * (float) Math.sin(startAngleRad));
+				path.close();
+			}
+			
 			// draw contour
 			sectorPaint.setStyle(Paint.Style.STROKE);
 			sectorPaint.setColor(circle.getState() == CircleState.ROLLING ? Color.GREEN : Color.YELLOW);
@@ -157,6 +194,12 @@ public class CircleLockVisualizer {
 			sectorPaint.setStyle(Paint.Style.FILL);
 			sectorPaint.setColor(this.mSectorColors.get(circle.getData().getColorIndex(i)));
 			canvas.drawPath(path, sectorPaint);
+			
+			// symbol
+			symbolMatrix.postRotate(medAngleDeg + 90f);
+			symbolMatrix.postTranslate(this.mCenter.x + medRadius * (float)Math.cos(medAngleRad),
+					this.mCenter.y + medRadius * (float)Math.sin(medAngleRad));
+			canvas.drawBitmap(symbol, symbolMatrix, null);
 		}
 
 	}
@@ -231,7 +274,7 @@ public class CircleLockVisualizer {
 								synchronized (circleLock) {
 									circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
 								}
-							} else if (Math.abs(tangentialComponent) > 0.5f * this.mCircleWidth[i]) {
+							} else if (Math.abs(tangentialComponent) > 0.4f * this.mCircleWidth[i]) {
 								vector.action = TouchVector.Action.SWAP;
 								
 								float initAngleRad = (float)Math.atan2(vector.init.y - this.mCenter.y,
@@ -243,19 +286,34 @@ public class CircleLockVisualizer {
 								int sectorIndex = (int)Math.floor(initAngleRad / stepAngleRad);
 								
 								if (tangentialComponent > 0f && i < circleLock.getCircleCount() - 1) {
-									if (circle.isSwappable(circleLock.getCircle(i + 1), sectorIndex)) {
-										synchronized (circleLock) {
-											circle.getData().swap(circleLock.getCircle(i + 1).getData(), sectorIndex);
-										}
+									if (circleLock.getCircle(i + 1).getState() == CircleState.IDLE
+											&& circle.isSwappable(circleLock.getCircle(i + 1), sectorIndex)) {
+										circle.swapSectorIndex = sectorIndex;
+										circle.swapSectorAngleRad = 0;
+										circleLock.getCircle(i + 1).swapSectorIndex = sectorIndex;
+										circleLock.getCircle(i + 1).swapSectorAngleRad = 0;
+										
+										circle.setState(CircleState.SWAPPING);
+										circleLock.getCircle(i + 1).setState(CircleState.SWAPPING);
+										
+										this.mAnimationPool.addAnimator(
+												new SwapAnimator(1000, circle, circleLock.getCircle(i + 1)));
 									}
 								} else if (tangentialComponent < 0f && i > 0) {
-									if (circle.isSwappable(circleLock.getCircle(i - 1), sectorIndex)) {
-										synchronized (circleLock) {
-											circle.getData().swap(circleLock.getCircle(i - 1).getData(), sectorIndex);
-										}
+									if (circleLock.getCircle(i - 1).getState() == CircleState.IDLE
+											&& circle.isSwappable(circleLock.getCircle(i - 1), sectorIndex)) {
+										circle.swapSectorIndex = sectorIndex;
+										circle.swapSectorAngleRad = 0;
+										circleLock.getCircle(i - 1).swapSectorIndex = sectorIndex;
+										circleLock.getCircle(i - 1).swapSectorAngleRad = 0;
+										
+										circle.setState(CircleState.SWAPPING);
+										circleLock.getCircle(i - 1).setState(CircleState.SWAPPING);
+										
+										this.mAnimationPool.addAnimator(
+												new SwapAnimator(1000, circleLock.getCircle(i - 1), circle));
 									}
 								}
-								//circle.setState(CircleState.SWAPPING);
 							}
 						} else if (isInitiatedHere && vector.action == TouchVector.Action.ROLL) {
 							circle.setState(CircleState.ROLLING);

@@ -1,6 +1,5 @@
 package grv.dvt.cilocks_proto;
 
-import android.util.Log;
 import grv.dvt.cilocks_proto.Circle.CircleState;
 
 public class CircleRollAnimator extends Animator {
@@ -20,13 +19,11 @@ public class CircleRollAnimator extends Animator {
 		
 		this.mStartAngleRad = circle.getAngleRad();
 		this.mEndAngleRad = this.mOffset * stepAngleRad;
-		Log.d("Animator", String.format("Start angle %.2f end angle %.2f", mStartAngleRad, mEndAngleRad));
 	}
 	
 	@Override
 	protected void onAnimationUpdate() {
 		float angleRad = this.mStartAngleRad + this.mFraction * (this.mEndAngleRad - this.mStartAngleRad);
-		Log.d("Animator", String.format("Animation angle %.2f", angleRad));
 		this.mCircle.setAngleRad(angleRad);
 	}
 

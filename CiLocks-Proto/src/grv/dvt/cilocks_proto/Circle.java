@@ -12,6 +12,9 @@ public class Circle {
 	private float mAngleRad;
 	private CircleState mState;
 
+	public int swapSectorIndex;
+	public float swapSectorAngleRad;
+	
 	public Circle(int size, int[] colorIndexes, int[] symbolIndexes) {
 		this.mData = new CircleData(size, colorIndexes, symbolIndexes);
 		this.mSectorCount = size;

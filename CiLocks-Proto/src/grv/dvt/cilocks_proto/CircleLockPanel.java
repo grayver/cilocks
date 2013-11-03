@@ -1,11 +1,14 @@
 package grv.dvt.cilocks_proto;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -22,6 +25,7 @@ public class CircleLockPanel extends SurfaceView implements
 	private CircleLock mCircleLock;
 	private CircleLockVisualizer mVisualizer;
 	private TouchVectorField mVectorField;
+	private SparseArray<Bitmap> mSectorSymbols;
 
 	public CircleLockPanel(Context context) {
 		super(context);
@@ -43,6 +47,11 @@ public class CircleLockPanel extends SurfaceView implements
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.d(TAG, "Creating panel");
 		
+		this.mSectorSymbols = new SparseArray<Bitmap>();
+		this.mSectorSymbols.put(0, BitmapFactory.decodeResource(getResources(), R.drawable.sign1));
+		this.mSectorSymbols.put(1, BitmapFactory.decodeResource(getResources(), R.drawable.sign2));
+		this.mSectorSymbols.put(2, BitmapFactory.decodeResource(getResources(), R.drawable.sign3));
+		
 		LockData initData = new LockData();
 		initData.columnCount = 8;
 		initData.rowCount = 3;
@@ -51,9 +60,9 @@ public class CircleLockPanel extends SurfaceView implements
 				{ 1, 0, 1, 0, 0, 1, 1, 0 },
 				{ 0, 1, 0, 0, 1, 1, 0, 1 } };
 		initData.symbolIndexes = new int[][] {
-				{ 0, 0, 0, 0, 0, 0, 0, 0 },
-				{ 0, 0, 0, 0, 0, 0, 0, 0 },
-				{ 0, 0, 0, 0, 0, 0, 0, 0 } };
+				{ 0, 1, 2, 1, 1, 0, 1, 2 },
+				{ 2, 0, 1, 2, 1, 1, 0, 1 },
+				{ 0, 1, 2, 1, 1, 0, 1, 2 } };
 		initData.keyColorCount = 4;
 		initData.keyColorIndexes = new int[] { 0, 1, 0, 1 };
 
@@ -62,7 +71,7 @@ public class CircleLockPanel extends SurfaceView implements
 		this.mViewAspect = new ViewAspect(this.getWidth(), this.getHeight());
 		this.mAnimationPool = new AnimationPool();
 		this.mVisualizer = new CircleLockVisualizer(this.mViewAspect,
-				this.mAnimationPool, initData.rowCount);
+				this.mAnimationPool, initData.rowCount, this.mSectorSymbols);
 		this.mVectorField = new TouchVectorField();
 
 		this.mThread.setRunning(true);
