@@ -83,6 +83,7 @@ public class CircleLockPanel extends SurfaceView implements
 		Log.d(TAG, "Destroying panel");
 		
 		boolean retry = true;
+		this.mThread.setRunning(false);
 		while (retry) {
 			try {
 				this.mThread.join();

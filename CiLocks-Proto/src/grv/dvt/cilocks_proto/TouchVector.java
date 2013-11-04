@@ -4,7 +4,7 @@ import android.graphics.PointF;
 
 public class TouchVector {
 	public enum Action {
-		UNKNOWN, ROLL, SWAP
+		UNKNOWN, DUMMY, ROLL, SWAP
 	}
 	
 	public PointF init;

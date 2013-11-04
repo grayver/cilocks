@@ -1,6 +1,7 @@
 package grv.dvt.cilocks_proto;
 
 import grv.dvt.cilocks_proto.Circle.CircleState;
+import grv.dvt.cilocks_proto.TouchVector.Action;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -59,9 +60,9 @@ public class CircleLockVisualizer {
 
 		float minDimension = Math.min(viewAspect.getWidth(), viewAspect.getHeight());
 
-		this.mMaxRadius = 0.43f * minDimension;
-		this.mMinRadius = 0.17f * minDimension;
-		this.mHoleRadius = 0.08f * minDimension;
+		this.mMaxRadius = 0.45f * minDimension;
+		this.mMinRadius = 0.15f * minDimension;
+		this.mHoleRadius = 0.075f * minDimension;
 
 		float circleWidth = (this.mMaxRadius - this.mMinRadius) / this.mCircleWidth.length;
 		Log.d(TAG, String.format("Circle width %.2f", circleWidth));
@@ -223,6 +224,8 @@ public class CircleLockVisualizer {
 		for (int i = 0; i < circleLock.getCircleCount(); i++) {
 			Circle circle = circleLock.getCircle(i);
 			int touchCount = 0;
+			float maxPositiveAngleRad = 0f;
+			float maxNegativeAngleRad = 0f;
 			
 			for (int j = 0; j < field.getVectorCount(); j++) {
 				TouchVector vector = field.getVector(j);
@@ -240,107 +243,126 @@ public class CircleLockVisualizer {
 					if (isInitiatedHere && vector.action == TouchVector.Action.UNKNOWN)
 						vector.action = TouchVector.Action.ROLL;
 					
-					if (vector.action == TouchVector.Action.ROLL) {
-						if (isPrevHere && isInitiatedHere) {
-							float normalComponent = getNormalComponent(
-									new PointF(vector.previous.x - this.mCenter.x, vector.previous.y - this.mCenter.y),
-									new PointF(vector.last.x - vector.previous.x, vector.last.y - vector.previous.y));
-							float radius = (float)Math.sqrt(getDistanceSquare(vector.previous, this.mCenter));
-							synchronized (circleLock) {
-								circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
-							}
-							touchCount++;
-						}
+					if (vector.action == TouchVector.Action.ROLL && isPrevHere && isInitiatedHere) {
+						float normalComponent = getNormalComponent(
+								new PointF(vector.previous.x - this.mCenter.x,
+										vector.previous.y - this.mCenter.y),
+								new PointF(vector.last.x - vector.previous.x,
+										vector.last.y - vector.previous.y));
+						float radius = (float)Math.sqrt(getDistanceSquare(vector.previous, this.mCenter));
+						float angle = (float)Math.atan2(normalComponent, radius);
+						if (angle > maxPositiveAngleRad)
+							maxPositiveAngleRad = angle;
+						if (angle < maxNegativeAngleRad)
+							maxNegativeAngleRad = angle;
+						touchCount++;
 					}
 					break;
 					
 				case IDLE:
 					
-					if (isPrevHere) {
+					if (isInitiatedHere && vector.action == TouchVector.Action.UNKNOWN) {
+						float normalComponent = getNormalComponent(
+								new PointF(vector.init.x - this.mCenter.x,
+										vector.init.y - this.mCenter.y),
+								new PointF(vector.last.x - vector.init.x,
+										vector.last.y - vector.init.y));
+						float tangentialComponent = getTangentialComponent(
+								new PointF(vector.init.x - this.mCenter.x,
+										vector.init.y - this.mCenter.y),
+								new PointF(vector.last.x - vector.init.x,
+										vector.last.y - vector.init.y));
 						
-						if (vector.action == TouchVector.Action.UNKNOWN) {
-							float normalComponent = getNormalComponent(
-									new PointF(vector.init.x - this.mCenter.x, vector.init.y - this.mCenter.y),
-									new PointF(vector.last.x - vector.init.x, vector.last.y - vector.init.y));
-							float tangentialComponent = getTangentialComponent(
-									new PointF(vector.init.x - this.mCenter.x, vector.init.y - this.mCenter.y),
-									new PointF(vector.last.x - vector.init.x, vector.last.y - vector.init.y));
-							
-							if (Math.abs(normalComponent) > 0.5f * this.mCircleWidth[i]) {
-								vector.action = TouchVector.Action.ROLL;
+						if (Math.abs(normalComponent) > 0.5f * this.mCircleWidth[i]) {
+							vector.action = TouchVector.Action.ROLL;
+							if (isPrevHere) {
 								circle.setState(CircleState.ROLLING);
 								
 								float radius = (float)Math.sqrt(getDistanceSquare(vector.init, this.mCenter));
-								synchronized (circleLock) {
-									circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
-								}
-							} else if (Math.abs(tangentialComponent) > 0.4f * this.mCircleWidth[i]) {
-								vector.action = TouchVector.Action.SWAP;
-								
-								float initAngleRad = (float)Math.atan2(vector.init.y - this.mCenter.y,
-										vector.init.x - this.mCenter.x);
-								if (initAngleRad < 0)
-									initAngleRad += 2 * Math.PI;
-								
-								float stepAngleRad = (float)(2 * Math.PI / circle.getSectorCount());
-								int sectorIndex = (int)Math.floor(initAngleRad / stepAngleRad);
-								
-								if (tangentialComponent > 0f && i < circleLock.getCircleCount() - 1) {
-									if (circleLock.getCircle(i + 1).getState() == CircleState.IDLE
-											&& circle.isSwappable(circleLock.getCircle(i + 1), sectorIndex)) {
-										circle.swapSectorIndex = sectorIndex;
-										circle.swapSectorAngleRad = 0;
-										circleLock.getCircle(i + 1).swapSectorIndex = sectorIndex;
-										circleLock.getCircle(i + 1).swapSectorAngleRad = 0;
-										
-										circle.setState(CircleState.SWAPPING);
-										circleLock.getCircle(i + 1).setState(CircleState.SWAPPING);
-										
-										this.mAnimationPool.addAnimator(
-												new SwapAnimator(1000, circle, circleLock.getCircle(i + 1)));
-									}
-								} else if (tangentialComponent < 0f && i > 0) {
-									if (circleLock.getCircle(i - 1).getState() == CircleState.IDLE
-											&& circle.isSwappable(circleLock.getCircle(i - 1), sectorIndex)) {
-										circle.swapSectorIndex = sectorIndex;
-										circle.swapSectorAngleRad = 0;
-										circleLock.getCircle(i - 1).swapSectorIndex = sectorIndex;
-										circleLock.getCircle(i - 1).swapSectorAngleRad = 0;
-										
-										circle.setState(CircleState.SWAPPING);
-										circleLock.getCircle(i - 1).setState(CircleState.SWAPPING);
-										
-										this.mAnimationPool.addAnimator(
-												new SwapAnimator(1000, circleLock.getCircle(i - 1), circle));
-									}
-								}
+								float angle = (float)Math.atan2(normalComponent, radius);
+								if (angle > maxPositiveAngleRad)
+									maxPositiveAngleRad = angle;
+								if (angle < maxNegativeAngleRad)
+									maxNegativeAngleRad = angle;								
 							}
-						} else if (isInitiatedHere && vector.action == TouchVector.Action.ROLL) {
-							circle.setState(CircleState.ROLLING);
+						} else if (Math.abs(tangentialComponent) > 0.5f * this.mCircleWidth[i]) {
+							vector.action = TouchVector.Action.SWAP;
 							
-							float normalComponent = getNormalComponent(
-									new PointF(vector.previous.x - this.mCenter.x, vector.previous.y - this.mCenter.y),
-									new PointF(vector.last.x - vector.previous.x, vector.last.y - vector.previous.y));
-							float radius = (float)Math.sqrt(getDistanceSquare(vector.previous, this.mCenter));
-							synchronized (circleLock) {
-								circle.setAngleRad(circle.getAngleRad() + (float)Math.atan2(normalComponent, radius));
+							float initAngleRad = (float)Math.atan2(vector.init.y - this.mCenter.y,
+									vector.init.x - this.mCenter.x);
+							if (initAngleRad < 0)
+								initAngleRad += 2 * Math.PI;
+							
+							float stepAngleRad = (float)(2 * Math.PI / circle.getSectorCount());
+							int sectorIndex = (int)Math.floor(initAngleRad / stepAngleRad);
+							
+							if (tangentialComponent > 0f && i < circleLock.getCircleCount() - 1) {
+								if (circleLock.getCircle(i + 1).getState() == CircleState.IDLE
+										&& circle.isSwappable(circleLock.getCircle(i + 1), sectorIndex)) {
+									circle.swapSectorIndex = sectorIndex;
+									circle.swapSectorAngleRad = 0;
+									circleLock.getCircle(i + 1).swapSectorIndex = sectorIndex;
+									circleLock.getCircle(i + 1).swapSectorAngleRad = 0;
+									
+									circle.setState(CircleState.SWAPPING);
+									circleLock.getCircle(i + 1).setState(CircleState.SWAPPING);
+									
+									this.mAnimationPool.addAnimator(
+											new SwapAnimator(1000, circle, circleLock.getCircle(i + 1)));
+								}
+							} else if (tangentialComponent < 0f && i > 0) {
+								if (circleLock.getCircle(i - 1).getState() == CircleState.IDLE
+										&& circle.isSwappable(circleLock.getCircle(i - 1), sectorIndex)) {
+									circle.swapSectorIndex = sectorIndex;
+									circle.swapSectorAngleRad = 0;
+									circleLock.getCircle(i - 1).swapSectorIndex = sectorIndex;
+									circleLock.getCircle(i - 1).swapSectorAngleRad = 0;
+									
+									circle.setState(CircleState.SWAPPING);
+									circleLock.getCircle(i - 1).setState(CircleState.SWAPPING);
+									
+									this.mAnimationPool.addAnimator(
+											new SwapAnimator(1000, circleLock.getCircle(i - 1), circle));
+								}
 							}
 						}
+					} else if (isInitiatedHere && isPrevHere && vector.action == TouchVector.Action.ROLL) {
+						circle.setState(CircleState.ROLLING);
 						
-						touchCount++;
+						float normalComponent = getNormalComponent(
+								new PointF(vector.previous.x - this.mCenter.x, vector.previous.y - this.mCenter.y),
+								new PointF(vector.last.x - vector.previous.x, vector.last.y - vector.previous.y));
+						float radius = (float)Math.sqrt(getDistanceSquare(vector.previous, this.mCenter));
+						float angle = (float)Math.atan2(normalComponent, radius);
+						if (angle > maxPositiveAngleRad)
+							maxPositiveAngleRad = angle;
+						if (angle < maxNegativeAngleRad)
+							maxNegativeAngleRad = angle;
 					}
+					
+					if (isPrevHere)
+						touchCount++;
 					break;
 					
 				case SWAPPING:
 				case ANIMATING:
+					if (isInitiatedHere && vector.action == TouchVector.Action.UNKNOWN)
+						vector.action = Action.DUMMY;
 					break;
 				}
 			}
 			
-			if (circle.getState() == CircleState.ROLLING && touchCount == 0)
-				synchronized (circleLock) {
-					this.releaseCircle(circle);
-				}
+			if (circle.getState() == CircleState.ROLLING) {
+				if (maxNegativeAngleRad < 0f || maxPositiveAngleRad > 0f) {
+					float resultAngleRad = maxPositiveAngleRad + maxNegativeAngleRad;
+					synchronized (circleLock) {
+						circle.setAngleRad(circle.getAngleRad() + resultAngleRad);
+					}
+				} else if (touchCount == 0)
+					synchronized (circleLock) {
+						this.releaseCircle(circle);
+					}
+			}
 		}
 	}
 	

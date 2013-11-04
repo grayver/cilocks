@@ -30,4 +30,16 @@ public class CircleLockActivity extends Activity {
 		Log.d(TAG, "Stopping...");
 		super.onStop();
 	}
+	
+	@Override
+	protected void onResume() {
+		Log.d(TAG, "Resuming...");
+		super.onResume();
+	}
+	
+	@Override
+	protected void onPause() {
+		Log.d(TAG, "Pausing...");
+		super.onPause();
+	}
 }
