@@ -36,4 +36,8 @@ public class TouchVectorField {
 	public TouchVector getVector(int index) {
 		return this.mVectors.valueAt(index);
 	}
+	
+	public void clearField() {
+		this.mVectors.clear();
+	}
 }

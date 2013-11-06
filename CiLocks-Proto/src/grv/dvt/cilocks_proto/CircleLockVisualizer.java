@@ -243,7 +243,7 @@ public class CircleLockVisualizer {
 					if (isInitiatedHere && vector.action == TouchVector.Action.UNKNOWN)
 						vector.action = TouchVector.Action.ROLL;
 					
-					if (vector.action == TouchVector.Action.ROLL && isPrevHere && isInitiatedHere) {
+					if (vector.action == TouchVector.Action.ROLL && isInitiatedHere) {
 						float normalComponent = getNormalComponent(
 								new PointF(vector.previous.x - this.mCenter.x,
 										vector.previous.y - this.mCenter.y),
@@ -262,16 +262,12 @@ public class CircleLockVisualizer {
 				case IDLE:
 					
 					if (isInitiatedHere && vector.action == TouchVector.Action.UNKNOWN) {
-						float normalComponent = getNormalComponent(
-								new PointF(vector.init.x - this.mCenter.x,
-										vector.init.y - this.mCenter.y),
-								new PointF(vector.last.x - vector.init.x,
-										vector.last.y - vector.init.y));
-						float tangentialComponent = getTangentialComponent(
-								new PointF(vector.init.x - this.mCenter.x,
-										vector.init.y - this.mCenter.y),
-								new PointF(vector.last.x - vector.init.x,
-										vector.last.y - vector.init.y));
+						PointF radialInitVector = new PointF(vector.init.x - this.mCenter.x,
+								vector.init.y - this.mCenter.y);
+						PointF lastInitVector = new PointF(vector.last.x - vector.init.x,
+								vector.last.y - vector.init.y);
+						float normalComponent = getNormalComponent(radialInitVector, lastInitVector);
+						float tangentialComponent = getTangentialComponent(radialInitVector, lastInitVector);
 						
 						if (Math.abs(normalComponent) > 0.5f * this.mCircleWidth[i]) {
 							vector.action = TouchVector.Action.ROLL;
@@ -326,22 +322,9 @@ public class CircleLockVisualizer {
 								}
 							}
 						}
-					} else if (isInitiatedHere && isPrevHere && vector.action == TouchVector.Action.ROLL) {
-						circle.setState(CircleState.ROLLING);
 						
-						float normalComponent = getNormalComponent(
-								new PointF(vector.previous.x - this.mCenter.x, vector.previous.y - this.mCenter.y),
-								new PointF(vector.last.x - vector.previous.x, vector.last.y - vector.previous.y));
-						float radius = (float)Math.sqrt(getDistanceSquare(vector.previous, this.mCenter));
-						float angle = (float)Math.atan2(normalComponent, radius);
-						if (angle > maxPositiveAngleRad)
-							maxPositiveAngleRad = angle;
-						if (angle < maxNegativeAngleRad)
-							maxNegativeAngleRad = angle;
-					}
-					
-					if (isPrevHere)
 						touchCount++;
+					}	
 					break;
 					
 				case SWAPPING:

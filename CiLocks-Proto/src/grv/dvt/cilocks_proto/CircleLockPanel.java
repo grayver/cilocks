@@ -116,6 +116,10 @@ public class CircleLockPanel extends SurfaceView implements
 					new PointF(MotionEventCompat.getX(event, i), MotionEventCompat.getY(event, i)));
 			this.mVisualizer.processVectors(this.mVectorField, this.mCircleLock);
 			break;
+		case MotionEvent.ACTION_CANCEL:
+			this.mVectorField.clearField();
+			this.mVisualizer.processVectors(this.mVectorField, this.mCircleLock);
+			break;
 		}
 
 		return true;
