@@ -67,7 +67,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 				-1.0f, 1.0f, 0.0f,
 				0.8f, 0.8f, 0.8f, 1.0f,
 				1.0f, 1.0f, 0.0f,
-				0.8f, 0.8f, 0.8f, 1.0f
+				0.8f, 0.0f, 0.0f, 1.0f
 				//1.0f, -1.0f, 0.0f,
 				//0.8f, 0.8f, 0.8f, 1.0f
 		};
@@ -121,11 +121,15 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		
 		// Create a new perspective projection matrix. The height will stay the same
 		// while the width will vary as per aspect ratio.
-		final float ratio = (float) width / height;
-		final float left = -ratio;
-		final float right = ratio;
-		final float bottom = -1.0f;
-		final float top = 1.0f;
+		final float ratio = (float)width / height;
+		final float backRatio = (float)height / width;
+
+		final float left = Math.min(-ratio, -1.0f);
+		final float right = Math.max(ratio, 1.0f);
+		
+		final float bottom = Math.min(-backRatio, -1.0f);
+		final float top = Math.max(backRatio, 1.0f);
+		
 		final float near = 1.0f;
 		final float far = 10.0f;
 		

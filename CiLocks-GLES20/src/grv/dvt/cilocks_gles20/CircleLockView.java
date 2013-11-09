@@ -18,7 +18,7 @@ public class CircleLockView extends GLSurfaceView {
 		setEGLContextClientVersion(2);
 		
 		// Render the view only when there is a change in the drawing data
-		//setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		
 		// Set renderer
 		mRenderer = new CircleLockRenderer();
