@@ -30,7 +30,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	
 	/** Size of the color data in elements. */
 	private final int mColorDataSize = 4;
-
+	
 	/** This will be used to pass in the transformation matrix. */
 	private int mMVPMatrixHandle;
 	
@@ -109,7 +109,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
         // This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix
         // (which now contains model * view * projection).
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-
+        
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3);
 	}
@@ -160,7 +160,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 			  + "               * a_Position;   \n"     // Multiply the vertex by the matrix to get the final point in 			                                            			 
 			  + "}                              \n";    // normalized screen coordinates.
 			
-			final String fragmentShader =
+		final String fragmentShader =
 				"precision mediump float;       \n"		// Set the default precision to medium. We don't need as high of a 
 														// precision in the fragment shader.				
 			  + "varying vec4 v_Color;          \n"		// This is the color from the vertex shader interpolated across the 
@@ -193,10 +193,10 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		if (vertexShaderHandle == 0) {
 			throw new RuntimeException("Error creating vertex shader.");
 		}
-
+		
 		// Load in the fragment shader shader.
 		int fragmentShaderHandle = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
-
+		
 		if (fragmentShaderHandle != 0) 
 		{
 			// Pass in the shader source.
@@ -215,7 +215,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 				fragmentShaderHandle = 0;
 			}
 		}
-
+		
 		if (fragmentShaderHandle == 0) {
 			throw new RuntimeException("Error creating fragment shader.");
 		}
@@ -251,6 +251,9 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		if (programHandle == 0) {
 			throw new RuntimeException("Error creating program.");
 		}
+		
+        // Release shader compiler
+        GLES20.glReleaseShaderCompiler();
 		
         // Set program handles. These will later be used to pass in values to the program.
         mMVPMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVPMatrix");        
