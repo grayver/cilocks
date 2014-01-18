@@ -9,6 +9,7 @@ public class CircleLockSector {
 		IDLE, SWAPPING
 	}
 	
+	
 	/** Sector state */
 	private CircleLockSector.State mState;
 	
@@ -21,9 +22,14 @@ public class CircleLockSector {
 	/** Sector symbol */
 	private int mSymbolIndex;
 	
+	
+	/** Constructor */
 	public CircleLockSector(int colorIndex, int symbolIndex) {
 		this.mColorIndex = colorIndex;
 		this.mSymbolIndex = symbolIndex;
+		
+		this.mAngleRad = 0f;
+		this.mState = CircleLockSector.State.IDLE;
 	}
 	
 	public CircleLockSector.State getState() {
@@ -39,11 +45,20 @@ public class CircleLockSector {
 	}
 	
 	public void setAngleRad(float value) {
+		if (value >= 2 * Math.PI)
+			value -= 2 * Math.PI;
+		if (value < 0)
+			value += 2 * Math.PI;
+		
 		this.mAngleRad = value;
 	}
 	
 	public int getColorIndex() {
 		return this.mColorIndex;
+	}
+	
+	public void setColorIndex(int value) {
+		this.mColorIndex = value;
 	}
 	
 	public int getSymbolIndex() {
