@@ -51,7 +51,9 @@ public class Converter {
 
 	protected static void dump() {
 		try {
-			DataOutputStream dos = new DataOutputStream(new FileOutputStream(objName + ".bin"));
+			DataOutputStream dos = new DataOutputStream(new FileOutputStream("out/" + objName.substring(0, 2).toLowerCase() + ".bin"));
+			
+			dos.writeInt(faces.size());
 			
 			for (Face face : faces) {
 				dos.writeFloat(face.coordA.x);
