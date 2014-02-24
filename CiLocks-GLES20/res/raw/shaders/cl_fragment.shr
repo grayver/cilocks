@@ -1,21 +1,18 @@
 precision mediump float;
 
-uniform vec3 u_LightPos;
-uniform sampler2D u_Texture;
+uniform sampler2D u_ColorMap;
 uniform sampler2D u_NormalMap;
 
-varying vec3 v_Position;
-varying vec2 v_TexCoordinate;
+varying vec2 v_UV;
+varying vec3 v_Light;
+varying float v_Distance;
 
 void main()
 {
-	float distance = length(u_LightPos - v_Position);
-	vec3 lightVector = normalize(u_LightPos - v_Position);
+	vec3 normal = normalize(texture2D(u_NormalMap, v_UV).rgb * 2.0 - 1.0);
 	
-	vec3 normalVector = normalize(texture2D(u_NormalMap, v_TexCoordinate).rgb * 2.0 - 1.0);
+	float diffuse = dot(normal, v_Light);
+	diffuse = clamp(diffuse * (1.0 / (1.0 + (0.25 * v_Distance * v_Distance))), 0.1, 1.0);
 	
-	float diffuse = max(dot(normalVector, lightVector), 0.1);
-	diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));
-	
-	gl_FragColor = texture2D(u_Texture, v_TexCoordinate) * diffuse;
-}	
+	gl_FragColor = texture2D(u_ColorMap, v_UV) * diffuse;
+}
