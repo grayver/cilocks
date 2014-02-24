@@ -30,19 +30,26 @@ public class Converter {
 		public float s;
 		public float t;
 	}
+
 	
 	public static class Face {
 		public VertCoord coordA;
 		public TexCoord texA;
+		public VertCoord normA;
+		
 		public VertCoord coordB;
 		public TexCoord texB;
+		public VertCoord normB;
+		
 		public VertCoord coordC;
 		public TexCoord texC;
+		public VertCoord normC;
 	}
 	
 	protected static String objName = null;
 	protected static ArrayList<VertCoord> vertCoords = new ArrayList<VertCoord>();
 	protected static ArrayList<TexCoord> texCoords = new ArrayList<TexCoord>();
+	protected static ArrayList<VertCoord> normCoords = new ArrayList<VertCoord>();
 	protected static ArrayList<Face> faces = new ArrayList<Face>();
 	
 	protected static void reset() {
@@ -61,18 +68,27 @@ public class Converter {
 				dos.writeFloat(face.coordA.z);
 				dos.writeFloat(face.texA.s);
 				dos.writeFloat(face.texA.t);
+				dos.writeFloat(face.normA.x);
+				dos.writeFloat(face.normA.y);
+				dos.writeFloat(face.normA.z);
 				
 				dos.writeFloat(face.coordB.x);
 				dos.writeFloat(face.coordB.y);
 				dos.writeFloat(face.coordB.z);
 				dos.writeFloat(face.texB.s);
 				dos.writeFloat(face.texB.t);
+				dos.writeFloat(face.normB.x);
+				dos.writeFloat(face.normB.y);
+				dos.writeFloat(face.normB.z);
 				
 				dos.writeFloat(face.coordC.x);
 				dos.writeFloat(face.coordC.y);
 				dos.writeFloat(face.coordC.z);
 				dos.writeFloat(face.texC.s);
 				dos.writeFloat(face.texC.t);
+				dos.writeFloat(face.normC.x);
+				dos.writeFloat(face.normC.y);
+				dos.writeFloat(face.normC.z);
 			}
 			
 			dos.flush();
@@ -114,6 +130,10 @@ public class Converter {
 					texCoords.add(new TexCoord(Float.parseFloat(lexems[1]), Float.parseFloat(lexems[2])));
 					break;
 					
+				case "vn":
+					normCoords.add(new VertCoord(Float.parseFloat(lexems[1]), Float.parseFloat(lexems[2]), Float.parseFloat(lexems[3])));
+					break;
+					
 				case "f":
 					Face face = new Face();
 					
@@ -123,12 +143,15 @@ public class Converter {
 					
 					face.coordA = vertCoords.get(Integer.parseInt(pairA[0]) - 1);
 					face.texA = texCoords.get(Integer.parseInt(pairA[1]) - 1);
+					face.normA = normCoords.get(Integer.parseInt(pairA[2]) - 1);
 					
 					face.coordB = vertCoords.get(Integer.parseInt(pairB[0]) - 1);
 					face.texB = texCoords.get(Integer.parseInt(pairB[1]) - 1);
+					face.normB = normCoords.get(Integer.parseInt(pairB[2]) - 1);
 					
 					face.coordC = vertCoords.get(Integer.parseInt(pairC[0]) - 1);
 					face.texC = texCoords.get(Integer.parseInt(pairC[1]) - 1);
+					face.normC = normCoords.get(Integer.parseInt(pairC[2]) - 1);
 					
 					faces.add(face);
 					break;
