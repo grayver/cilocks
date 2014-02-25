@@ -35,7 +35,7 @@ public class TextureContainer {
 	}
 	
 	private void loadTexture(int texId, String resName) throws IOException {
-		int resId = mContext.getResources().getIdentifier(resName, "raw/textures", mContext.getPackageName());
+		int resId = mContext.getResources().getIdentifier(resName, "raw", mContext.getPackageName());
 		
 		InputStream is = mContext.getResources().openRawResource(resId);
 		Bitmap bm = BitmapFactory.decodeStream(is);
@@ -63,7 +63,7 @@ public class TextureContainer {
 		int counter = 0;
 		
 		for (int i = 0; i < mColorCount; i++) {
-			String resName = String.format(Locale.ENGLISH, "stone_tex%d.png", i + 1);
+			String resName = String.format(Locale.ENGLISH, "texture_stone_tex%d", i + 1);
 			loadTexture(flatTexIds[counter], resName);
 			
 			mColorTextureIds[i] = flatTexIds[counter];
@@ -71,7 +71,7 @@ public class TextureContainer {
 		}
 		
 		for (int i = 0; i < mSymbolCount; i++) {
-			String resName = String.format(Locale.ENGLISH, "symbol_map%d.png", i + 1);
+			String resName = String.format(Locale.ENGLISH, "texture_symbol_map%d", i + 1);
 			loadTexture(flatTexIds[counter], resName);
 			
 			mSymbolTextureIds[i] = flatTexIds[counter];

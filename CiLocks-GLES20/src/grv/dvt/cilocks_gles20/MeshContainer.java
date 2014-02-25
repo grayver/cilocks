@@ -79,8 +79,8 @@ public class MeshContainer {
 		int[][] resIds = new int[mCircleCount][mSectorCount];
 		for (int i = 0; i < mCircleCount; i++)
 			for (int j = 0; j < mSectorCount; j++) {
-				String resName = String.format(Locale.ENGLISH, "%s%d.bin", mCirclePrefixes[i], j + 1);
-				resIds[i][j] = mContext.getResources().getIdentifier(resName, "raw/meshes", mContext.getPackageName());
+				String resName = String.format(Locale.ENGLISH, "mesh_%s%d", mCirclePrefixes[i], j + 1);
+				resIds[i][j] = mContext.getResources().getIdentifier(resName, "raw", mContext.getPackageName());
 			}
 		
 		return resIds;

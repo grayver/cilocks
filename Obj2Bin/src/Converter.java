@@ -102,7 +102,7 @@ public class Converter {
 
 	protected static void dump() {
 		try {
-			DataOutputStream dos = new DataOutputStream(new FileOutputStream("out/" + objName.substring(0, 2).toLowerCase() + ".bin"));
+			DataOutputStream dos = new DataOutputStream(new FileOutputStream("out/mesh_" + objName.substring(0, 2).toLowerCase() + ".bin"));
 			
 			dos.writeInt(faces.size());
 			
@@ -165,8 +165,8 @@ public class Converter {
 		//	return;
 		
 		//String filename = args[0];
-		//String filename = "D:\\Development\\Android\\Model\\mycircles.obj";
-		String filename = "D:\\Dropbox\\CircleLocks\\model\\mycircles.obj";
+		String filename = "D:\\Development\\Android\\Model\\mycircles.obj";
+		//String filename = "D:\\Dropbox\\CircleLocks\\model\\mycircles.obj";
 		objName = null;
 		
 		try {

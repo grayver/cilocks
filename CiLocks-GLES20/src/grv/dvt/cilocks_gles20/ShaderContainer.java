@@ -38,7 +38,7 @@ public class ShaderContainer {
 	}
 	
 	private String loadShaderSource(String resName) throws IOException {
-		int resId = mContext.getResources().getIdentifier(resName, "raw/shaders", mContext.getPackageName());
+		int resId = mContext.getResources().getIdentifier(resName, "raw", mContext.getPackageName());
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(mContext.getResources().openRawResource(resId)));
 		String line;
@@ -58,7 +58,7 @@ public class ShaderContainer {
 		mVertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
 		if (mVertexShaderHandle != 0) {
 			// Pass in the shader source.
-			GLES20.glShaderSource(mVertexShaderHandle, loadShaderSource("cl_vertex.shr"));
+			GLES20.glShaderSource(mVertexShaderHandle, loadShaderSource("shader_cl_vertex"));
 
 			// Compile the shader.
 			GLES20.glCompileShader(mVertexShaderHandle);
@@ -85,7 +85,7 @@ public class ShaderContainer {
 		if (mFragmentShaderHandle != 0) 
 		{
 			// Pass in the shader source.
-			GLES20.glShaderSource(mFragmentShaderHandle, loadShaderSource("cl_fragment.shr"));
+			GLES20.glShaderSource(mFragmentShaderHandle, loadShaderSource("shader_cl_fragment"));
 
 			// Compile the shader.
 			GLES20.glCompileShader(mFragmentShaderHandle);
