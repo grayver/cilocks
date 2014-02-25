@@ -14,9 +14,12 @@ varying float v_Distance;
 
 void main()
 {
-	vec3 normal = u_MVMatrix * a_Normal; // normal vector should be normalized
-	vec3 tangent = u_MVMatrix * a_Tangent; // tangent vector should be normalized
-	vec3 bitangent = u_MVMatrix * a_Bitangent; // bitangent vector should be normalized
+	gl_Position = u_MVPMatrix * a_Position;
+	
+	mat3 mv = mat3(u_MVMatrix);
+	vec3 normal = mv * a_Normal; // normal vector should be normalized
+	vec3 tangent = mv * a_Tangent; // tangent vector should be normalized
+	vec3 bitangent = mv * a_Bitangent; // bitangent vector should be normalized
 	
 	mat3 TBN = transpose(mat3(tangent, bitangent, normal)); 
 	
@@ -25,6 +28,4 @@ void main()
 	v_UV = a_UV;
 	v_Light = TBN * normalize(u_Light - position);
 	v_Distance = length(u_Light - position);
-	
-	gl_Position = u_MVPMatrix * a_Position;
 }

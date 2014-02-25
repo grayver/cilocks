@@ -102,7 +102,10 @@ public class ShaderContainer {
 			
 			// Bind attributes
 			GLES20.glBindAttribLocation(mProgramHandle, 0, "a_Position");
-			GLES20.glBindAttribLocation(mProgramHandle, 1, "a_Color");
+			GLES20.glBindAttribLocation(mProgramHandle, 1, "a_UV");
+			GLES20.glBindAttribLocation(mProgramHandle, 2, "a_Normal");
+			GLES20.glBindAttribLocation(mProgramHandle, 3, "a_Tangent");
+			GLES20.glBindAttribLocation(mProgramHandle, 4, "a_Bitangent");
 			
 			// Link the two shaders together into a program.
 			GLES20.glLinkProgram(mProgramHandle);

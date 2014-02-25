@@ -16,15 +16,58 @@ public class Converter {
 			z = pz;
 		}
 		
+		public void normalize() {
+			double r = Math.sqrt(x *x + y * y + z * z);
+			x = (float)(x / r);
+			y = (float)(y / r);
+			z = (float)(z / r);
+		}
+		
+		public VertCoord diff(VertCoord arg) {
+			return new VertCoord(x - arg.x, y - arg.y, z - arg.z);
+		}
+		
+		public VertCoord mul(float arg) {
+			return new VertCoord(x * arg, y * arg, z * arg);
+		}
+		
+		public VertCoord div(float arg) {
+			return new VertCoord(x / arg, y / arg, z / arg);
+		}
+		
+		public float dot(VertCoord arg) {
+			return x * arg.x + y * arg.y + z * arg.z;
+		}
+		
+		public VertCoord cross(VertCoord arg) {
+			return new VertCoord(y * arg.z - z * arg.y, z * arg.x - x * arg.z, x * arg.y - y * arg.x);
+		}
+		
+		public void writeToStream(DataOutputStream dos) throws IOException {
+			dos.writeFloat(x);
+			dos.writeFloat(y);
+			dos.writeFloat(z);
+		}
+		
 		public float x;
 		public float y;
 		public float z;
 	}
 	
+	
 	public static class TexCoord {
 		public TexCoord(float ps, float pt) {
 			s = ps;
 			t = pt;
+		}
+		
+		public TexCoord diff(TexCoord arg) {
+			return new TexCoord(s - arg.s, t - arg.t);
+		}
+		
+		public void writeToStream(DataOutputStream dos) throws IOException {
+			dos.writeFloat(s);
+			dos.writeFloat(t);
 		}
 		
 		public float s;
@@ -46,6 +89,7 @@ public class Converter {
 		public VertCoord normC;
 	}
 	
+	
 	protected static String objName = null;
 	protected static ArrayList<VertCoord> vertCoords = new ArrayList<VertCoord>();
 	protected static ArrayList<TexCoord> texCoords = new ArrayList<TexCoord>();
@@ -63,32 +107,50 @@ public class Converter {
 			dos.writeInt(faces.size());
 			
 			for (Face face : faces) {
-				dos.writeFloat(face.coordA.x);
-				dos.writeFloat(face.coordA.y);
-				dos.writeFloat(face.coordA.z);
-				dos.writeFloat(face.texA.s);
-				dos.writeFloat(face.texA.t);
-				dos.writeFloat(face.normA.x);
-				dos.writeFloat(face.normA.y);
-				dos.writeFloat(face.normA.z);
+				VertCoord deltaPos1 = face.coordB.diff(face.coordA);
+				VertCoord deltaPos2 = face.coordC.diff(face.coordA);
+				TexCoord deltaUV1 = face.texB.diff(face.texA);
+				TexCoord deltaUV2 = face.texC.diff(face.texA);
+				float r = deltaUV1.s * deltaUV2.t - deltaUV1.t * deltaUV2.s;
+				VertCoord tangent = (deltaPos1.mul(deltaUV2.t).diff(deltaPos2.mul(deltaUV1.t))).div(r);
+				VertCoord bitangent = (deltaPos2.mul(deltaUV1.s).diff(deltaPos1.mul(deltaUV2.s))).div(r);
+				bitangent.normalize();
 				
-				dos.writeFloat(face.coordB.x);
-				dos.writeFloat(face.coordB.y);
-				dos.writeFloat(face.coordB.z);
-				dos.writeFloat(face.texB.s);
-				dos.writeFloat(face.texB.t);
-				dos.writeFloat(face.normB.x);
-				dos.writeFloat(face.normB.y);
-				dos.writeFloat(face.normB.z);
+				VertCoord tangentA = tangent.diff(face.normA.mul(face.normA.dot(tangent)));
+				tangentA.normalize();
+				if (face.normA.cross(tangentA).dot(bitangent) < 0.0f)
+					tangentA = tangentA.mul(-1.0f);
+
+				VertCoord tangentB = tangent.diff(face.normB.mul(face.normB.dot(tangent)));
+				tangentB.normalize();
+				if (face.normB.cross(tangentB).dot(bitangent) < 0.0f)
+					tangentB = tangentB.mul(-1.0f);
 				
-				dos.writeFloat(face.coordC.x);
-				dos.writeFloat(face.coordC.y);
-				dos.writeFloat(face.coordC.z);
-				dos.writeFloat(face.texC.s);
-				dos.writeFloat(face.texC.t);
-				dos.writeFloat(face.normC.x);
-				dos.writeFloat(face.normC.y);
-				dos.writeFloat(face.normC.z);
+				VertCoord tangentC = tangent.diff(face.normC.mul(face.normC.dot(tangent)));
+				tangentC.normalize();
+				if (face.normC.cross(tangentC).dot(bitangent) < 0.0f)
+					tangentC = tangentC.mul(-1.0f);
+				
+				face.coordA.writeToStream(dos);
+				face.texA.writeToStream(dos);
+				face.normA.normalize();
+				face.normA.writeToStream(dos);
+				tangentA.writeToStream(dos);
+				bitangent.writeToStream(dos);
+				
+				face.coordB.writeToStream(dos);
+				face.texB.writeToStream(dos);
+				face.normB.normalize();
+				face.normB.writeToStream(dos);
+				tangentB.writeToStream(dos);
+				bitangent.writeToStream(dos);
+				
+				face.coordC.writeToStream(dos);
+				face.texC.writeToStream(dos);
+				face.normC.normalize();
+				face.normC.writeToStream(dos);
+				tangentC.writeToStream(dos);
+				bitangent.writeToStream(dos);
 			}
 			
 			dos.flush();
@@ -102,7 +164,9 @@ public class Converter {
 		//if (args.length == 0)
 		//	return;
 		
-		String filename = "D:\\Development\\Android\\Model\\mycircles.obj"; //args[0];
+		//String filename = args[0];
+		//String filename = "D:\\Development\\Android\\Model\\mycircles.obj";
+		String filename = "D:\\Dropbox\\CircleLocks\\model\\mycircles.obj";
 		objName = null;
 		
 		try {
