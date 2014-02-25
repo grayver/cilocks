@@ -27,8 +27,11 @@ public class TextureContainer {
 	// GLES normal texture identifiers
 	private int[] mSymbolTextureIds;
 	
+	private boolean mIsLoaded;
+	
 	public TextureContainer(Context context) {
 		mContext = context;
+		mIsLoaded = false;
 	}
 	
 	private void loadTexture(int texId, String resName) throws IOException {
@@ -74,6 +77,8 @@ public class TextureContainer {
 			mSymbolTextureIds[i] = flatTexIds[counter];
 			counter++;
 		}
+		
+		mIsLoaded = true;
 	}
 	
 	public void bindTextures(int colorIndex, int symbolIndex) {
@@ -85,19 +90,21 @@ public class TextureContainer {
 	}
 	
 	public void releaseTextures() {
-		int[] flatTexIds = new int[mColorCount + mSymbolCount];
-		int counter = 0;
-		
-		for (int i = 0; i < mColorCount; i++) {
-			flatTexIds[counter] = mColorTextureIds[i];
-			counter++;
+		if (mIsLoaded) {
+			int[] flatTexIds = new int[mColorCount + mSymbolCount];
+			int counter = 0;
+			
+			for (int i = 0; i < mColorCount; i++) {
+				flatTexIds[counter] = mColorTextureIds[i];
+				counter++;
+			}
+			
+			for (int i = 0; i < mSymbolCount; i++) {
+				flatTexIds[counter] = mSymbolTextureIds[i];
+				counter++;
+			}
+			
+			GLES20.glDeleteTextures(mColorCount + mSymbolCount, flatTexIds, 0);
 		}
-		
-		for (int i = 0; i < mSymbolCount; i++) {
-			flatTexIds[counter] = mSymbolTextureIds[i];
-			counter++;
-		}
-		
-		GLES20.glDeleteTextures(mColorCount + mSymbolCount, flatTexIds, 0);
 	}
 }

@@ -18,8 +18,23 @@ public class ShaderContainer {
 	
 	private int mProgramHandle;
 	
+    private int mLightHandle;
+    private int mMVPMatrixHandle;
+    private int mMVMatrixHandle;
+    private int mColorMapHandle;
+    private int mNormalMapHandle;
+    
+    private int mPositionHandle;
+    private int mUVHandle;
+    private int mNormalHandle;
+    private int mTangentHandle;
+    private int mBitangentHandle;
+	
+    private boolean mIsLoaded;
+    
 	public ShaderContainer(Context context) {
 		mContext = context;
+		mIsLoaded = false;
 	}
 	
 	private String loadShaderSource(String resName) throws IOException {
@@ -129,17 +144,69 @@ public class ShaderContainer {
         GLES20.glReleaseShaderCompiler();
 		
         // Set program handles. These will later be used to pass in values to the program.
-        //mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix");        
-        //mPositionHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Position");
-        //mColorHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Color");        
+        mLightHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Light");
+        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix");
+        mMVMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVMatrix");
+        mColorMapHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_ColorMap");
+        mNormalMapHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_NormalMap");
+        
+        mPositionHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Position");
+        mUVHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_UV");
+        mNormalHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Normal");
+        mTangentHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Tangent");
+        mBitangentHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Bitangent");
         
         // Tell OpenGL to use this program when rendering.
         GLES20.glUseProgram(mProgramHandle);
+        
+        mIsLoaded = true;
 	}
 	
 	public void releaseShaders() {
-		GLES20.glDeleteProgram(mProgramHandle);
-		GLES20.glDeleteShader(mFragmentShaderHandle);
-		GLES20.glDeleteShader(mVertexShaderHandle);
+		if (mIsLoaded) {
+			GLES20.glDeleteProgram(mProgramHandle);
+			GLES20.glDeleteShader(mFragmentShaderHandle);
+			GLES20.glDeleteShader(mVertexShaderHandle);
+		}
+	}
+	
+	public int getLightHandle() {
+		return mLightHandle;
+	}
+	
+	public int getMVPMatrixHandle() {
+		return mMVPMatrixHandle;
+	}
+	
+	public int getMVMatrixHandle() {
+		return mMVMatrixHandle;
+	}
+	
+	public int getColorMapHandle() {
+		return mColorMapHandle;
+	}
+	
+	public int getNormalMapHandle() {
+		return mNormalMapHandle;
+	}
+	
+	public int getPositionHandle() {
+		return mPositionHandle;
+	}
+	
+	public int getUVHandle() {
+		return mUVHandle;
+	}
+	
+	public int getNormalHandle() {
+		return mNormalHandle;
+	}
+	
+	public int getTangentHandle() {
+		return mTangentHandle;
+	}
+	
+	public int getBitangentHandle() {
+		return mBitangentHandle;
 	}
 }

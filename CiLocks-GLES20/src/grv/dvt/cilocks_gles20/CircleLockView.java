@@ -20,8 +20,19 @@ public class CircleLockView extends GLSurfaceView {
 		// Render the view only when there is a change in the drawing data
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		
+		// Test circle lock
+		int[][] colorIndexes = new int[][] {
+				{ 0, 1, 0, 0, 1, 1, 0, 1 },
+				{ 1, 0, 1, 0, 0, 1, 1, 0 },
+				{ 0, 1, 0, 0, 1, 1, 0, 1 } };
+		int[][] symbolIndexes = new int[][] {
+				{ 0, 1, 2, 1, 1, 0, 1, 2 },
+				{ 2, 0, 1, 2, 1, 1, 0, 1 },
+				{ 0, 1, 2, 1, 1, 0, 1, 2 } };
+		CircleLockLock circleLock = new CircleLockLock(3, 8, colorIndexes, symbolIndexes);
+		
 		// Set renderer
-		mRenderer = new CircleLockRenderer();
+		mRenderer = new CircleLockRenderer(context, circleLock);
 		setRenderer(mRenderer);
 		
 		// Initialize vector field

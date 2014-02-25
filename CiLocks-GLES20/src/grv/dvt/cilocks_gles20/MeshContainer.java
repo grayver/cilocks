@@ -66,10 +66,13 @@ public class MeshContainer {
 	// Resource name prefixes
 	private final String[] mCirclePrefixes = new String[] { "i", "m", "o" };
 	
+	private boolean mIsLoaded;
+	
 	public MeshContainer(Context context) {
 		mContext = context;
 		mBufferIds = new int[mCircleCount][mSectorCount];
 		mVertexCounts = new int[mCircleCount][mSectorCount];
+		mIsLoaded = false;
 	}
 	
 	protected int[][] resolveResources() {
@@ -112,6 +115,8 @@ public class MeshContainer {
 				mVertexCounts[i][j] = vertexCount;
 				counter++;
 			}
+		
+		mIsLoaded = true;
 	}
 	
 	public void drawMesh(
@@ -146,15 +151,17 @@ public class MeshContainer {
 	}
 	
 	public void releaseBuffers() {
-		int[] flatBufferIds = new int[mCircleCount * mSectorCount];
-		int counter = 0;
-		
-		for (int i = 0; i < mCircleCount; i++)
-			for (int j = 0; j < mSectorCount; j++) {
-				flatBufferIds[counter] = mBufferIds[i][j];
-				counter++;
-			}
-		
-		GLES20.glDeleteBuffers(mCircleCount * mSectorCount, flatBufferIds, 0);
+		if (mIsLoaded) {
+			int[] flatBufferIds = new int[mCircleCount * mSectorCount];
+			int counter = 0;
+			
+			for (int i = 0; i < mCircleCount; i++)
+				for (int j = 0; j < mSectorCount; j++) {
+					flatBufferIds[counter] = mBufferIds[i][j];
+					counter++;
+				}
+			
+			GLES20.glDeleteBuffers(mCircleCount * mSectorCount, flatBufferIds, 0);
+		}
 	}
 }
