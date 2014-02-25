@@ -136,6 +136,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 			mMeshContainer.loadMeshes();
 			mTextureContainer.loadTextures();
 			mShaderContainer.loadShaders();
+			System.gc();
 			
 		    mLightHandle = mShaderContainer.getLightHandle();
 		    mMVPMatrixHandle = mShaderContainer.getMVPMatrixHandle();

@@ -17,9 +17,6 @@ public class CircleLockView extends GLSurfaceView {
 		// Request an OpenGL ES 2.0 compatible context.
 		setEGLContextClientVersion(2);
 		
-		// Render the view only when there is a change in the drawing data
-		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-		
 		// Test circle lock
 		int[][] colorIndexes = new int[][] {
 				{ 0, 1, 0, 0, 1, 1, 0, 1 },
@@ -34,6 +31,9 @@ public class CircleLockView extends GLSurfaceView {
 		// Set renderer
 		mRenderer = new CircleLockRenderer(context, circleLock);
 		setRenderer(mRenderer);
+		
+		// Render the view only when there is a change in the drawing data
+		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		
 		// Initialize vector field
 		mVectorField = new TouchVectorField();
