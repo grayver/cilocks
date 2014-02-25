@@ -31,6 +31,8 @@ public class TextureContainer {
 	
 	public TextureContainer(Context context) {
 		mContext = context;
+		mColorTextureIds = new int[mColorCount];
+		mSymbolTextureIds = new int[mSymbolCount];
 		mIsLoaded = false;
 	}
 	

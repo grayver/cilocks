@@ -24,7 +24,7 @@ void main()
 	mat3 TBN = transpose(mat3(tangent, bitangent, normal)); 
 	
 	// transfer to tangent space
-	vec3 position = u_MVMatrix * a_Position;
+	vec3 position = vec3(u_MVMatrix * a_Position);
 	v_UV = a_UV;
 	v_Light = TBN * normalize(u_Light - position);
 	v_Distance = length(u_Light - position);

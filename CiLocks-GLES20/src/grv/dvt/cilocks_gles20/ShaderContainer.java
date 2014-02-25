@@ -6,8 +6,11 @@ import java.io.InputStreamReader;
 
 import android.content.Context;
 import android.opengl.GLES20;
+import android.util.Log;
 
 public class ShaderContainer {
+	
+	private static final String TAG = ShaderContainer.class.getSimpleName();
 	
 	// Activity context
 	private Context mContext;
@@ -68,7 +71,8 @@ public class ShaderContainer {
 			GLES20.glGetShaderiv(mVertexShaderHandle, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
 
 			// If the compilation failed, delete the shader.
-			if (compileStatus[0] == 0) {				
+			if (compileStatus[0] == 0) {
+				Log.d(TAG, "Vertex shader compilation error: " + GLES20.glGetShaderInfoLog(mVertexShaderHandle));
 				GLES20.glDeleteShader(mVertexShaderHandle);
 				mVertexShaderHandle = 0;
 			}
@@ -95,7 +99,8 @@ public class ShaderContainer {
 			GLES20.glGetShaderiv(mFragmentShaderHandle, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
 
 			// If the compilation failed, delete the shader.
-			if (compileStatus[0] == 0) {				
+			if (compileStatus[0] == 0) {
+				Log.d(TAG, "Fragment shader compilation error: " + GLES20.glGetShaderInfoLog(mFragmentShaderHandle));
 				GLES20.glDeleteShader(mFragmentShaderHandle);
 				mFragmentShaderHandle = 0;
 			}
