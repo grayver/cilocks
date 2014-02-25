@@ -48,14 +48,14 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	/** Store the projection matrix. This is used to project the scene onto a 2D viewport. */
 	private float[] mProjectionMatrix = new float[16];
 	
-	/** Allocate storage for modelview matrix. Will be passed into th shader program. */
+	/** Allocate storage for modelview matrix. Will be passed into the shader program. */
 	private float[] mMVMatrix = new float[16];
 	
 	/** Allocate storage for the final combined matrix. This will be passed into the shader program. */
 	private float[] mMVPMatrix = new float[16];
 	
 	/** Light position in world coordinates. */
-	private float[] mLightPosition = new float[] { 0.0f, 0.0f, 3.0f, 1.0f };
+	private float[] mLightPosition = new float[] { 0.0f, 0.0f, 0.15f, 1.0f };
 	
 	/** Light position in view coordinates. */
 	private float[] mVLightPosition = new float[4];
@@ -85,7 +85,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 				// This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix.
 				Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVMatrix, 0);
 				
-				GLES20.glUniform3f(mLightHandle, mVLightPosition[0], mVLightPosition[1], mVLightPosition[2]);
+				GLES20.glUniform3fv(mLightHandle, 1, mVLightPosition, 0);
 				GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVMatrix, 0);
 				GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 				
@@ -142,7 +142,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		    mMVPMatrixHandle = mShaderContainer.getMVPMatrixHandle();
 		    mMVMatrixHandle = mShaderContainer.getMVMatrixHandle();
 		    mColorMapHandle = mShaderContainer.getColorMapHandle();
-		    mNormalMapHandle = mShaderContainer.getNormalHandle();
+		    mNormalMapHandle = mShaderContainer.getNormalMapHandle();
 		    
 		    mPositionHandle = mShaderContainer.getPositionHandle();
 		    mUVHandle = mShaderContainer.getUVHandle();

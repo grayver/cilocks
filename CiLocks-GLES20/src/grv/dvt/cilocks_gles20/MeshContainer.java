@@ -98,7 +98,7 @@ public class MeshContainer {
 				DataInputStream is = new DataInputStream(mContext.getResources().openRawResource(resIds[i][j]));
 				
 				int vertexCount = is.readInt();
-				int bufferSize = vertexCount * mStrideBytes;
+				int bufferSize = vertexCount * mStrideBytes * mBytesPerFloat;
 				byte[] buffer = new byte[bufferSize];
 				is.read(buffer, 0, bufferSize);
 				is.close();
