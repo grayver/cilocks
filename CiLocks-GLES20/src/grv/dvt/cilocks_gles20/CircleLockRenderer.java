@@ -77,8 +77,6 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 			for (int j = 0; j < mCircleLock.getCircle(i).getSectorCount(); j++) {
 				Matrix.setIdentityM(mModelMatrix, 0);
 				
-				Matrix.rotateM(mModelMatrix, 0, 90.0f, 1.0f, 0.0f, 0.0f);
-				
 				// This multiplies the view matrix by the model matrix, and stores the result in the MV matrix.
 				Matrix.multiplyMM(mMVMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
 				
