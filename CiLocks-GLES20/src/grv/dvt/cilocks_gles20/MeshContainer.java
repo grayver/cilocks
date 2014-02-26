@@ -20,41 +20,53 @@ public class MeshContainer {
 	/** How many bytes per float. */
 	private final int mBytesPerFloat = 4;
 	
-	/** Offset of the position data. */
+	/** Offset of the position data in bytes. */
 	private final int mPositionOffset = 0;
 	
 	/** Size of the position data in elements. */
-	private final int mPositionDataSize = 3;
+	private final int mPositionSize = 3;
 	
-	/** Offset of the texture mapping data. */
+	/** Size of the position data in bytes. */
+	private final int mPositionDataSize = mPositionSize * mBytesPerFloat;
+	
+	/** Offset of the texture mapping data in bytes. */
 	private final int mUVOffset = mPositionOffset + mPositionDataSize;
 	
 	/** Size of the texture mapping data in elements. */
-	private final int mUVDataSize = 2;
+	private final int mUVSize = 2;
 	
-	/** Offset of the normal data. */
+	/** Size of the texture mapping data in bytes. */
+	private final int mUVDataSize = mUVSize * mBytesPerFloat;
+	
+	/** Offset of the normal data in bytes. */
 	private final int mNormalOffset = mUVOffset + mUVDataSize;
 	
 	/** Size of the normal data in elements. */
-	private final int mNormalDataSize = 3;
+	private final int mNormalSize = 3;
 	
-	/** Offset of the tangent data. */
+	/** Size of the normal data in bytes. */
+	private final int mNormalDataSize = mNormalSize * mBytesPerFloat;
+	
+	/** Offset of the tangent data in bytes. */
 	private final int mTangentOffset = mNormalOffset + mNormalDataSize;
 	
 	/** Size of the tangent data in elements. */
-	private final int mTangentDataSize = 3;
+	private final int mTangentSize = 3;
 	
-	/** Offset of the bitangent data.  */
+	/** Size of the tangent data in bytes. */
+	private final int mTangentDataSize = mTangentSize * mBytesPerFloat;
+	
+	/** Offset of the bitangent data in bytes.  */
 	private final int mBitangentOffset = mTangentOffset + mTangentDataSize;
 	
-	/** Size of the bitangent data in elements */
-	private final int mBitangentDataSize = 3;
+	/** Size of the bitangent data in elements. */
+	private final int mBitangentSize = 3;
 	
-	/** How many elements per vertex. */
-	private final int mElementsPerVertex = mBitangentOffset + mBitangentDataSize;
+	/** Size of the bitangent data in bytes. */
+	private final int mBitangentDataSize = mBitangentSize * mBytesPerFloat;
 	
 	/** How many bytes per vertex. */
-	private final int mStrideBytes = mElementsPerVertex * mBytesPerFloat;
+	private final int mStrideBytes = mBitangentOffset + mBitangentDataSize;
 	
 	
 	// Activity context
@@ -135,19 +147,19 @@ public class MeshContainer {
 		
 		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mBufferIds[circleIndex][sectorIndex]);
 		
-		GLES20.glVertexAttribPointer(positionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, mStrideBytes, mPositionOffset);
+		GLES20.glVertexAttribPointer(positionHandle, mPositionSize, GLES20.GL_FLOAT, false, mStrideBytes, mPositionOffset);
 		GLES20.glEnableVertexAttribArray(positionHandle);
 		
-		GLES20.glVertexAttribPointer(UVHandle, mUVDataSize, GLES20.GL_FLOAT, false, mStrideBytes, mUVOffset);
+		GLES20.glVertexAttribPointer(UVHandle, mUVSize, GLES20.GL_FLOAT, false, mStrideBytes, mUVOffset);
 		GLES20.glEnableVertexAttribArray(UVHandle);
 		
-		GLES20.glVertexAttribPointer(normalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, mStrideBytes, mNormalOffset);
+		GLES20.glVertexAttribPointer(normalHandle, mNormalSize, GLES20.GL_FLOAT, false, mStrideBytes, mNormalOffset);
 		GLES20.glEnableVertexAttribArray(normalHandle);
 		
-		GLES20.glVertexAttribPointer(tangentHandle, mTangentDataSize, GLES20.GL_FLOAT, false, mStrideBytes, mTangentOffset);
+		GLES20.glVertexAttribPointer(tangentHandle, mTangentSize, GLES20.GL_FLOAT, false, mStrideBytes, mTangentOffset);
 		GLES20.glEnableVertexAttribArray(tangentHandle);
 
-		GLES20.glVertexAttribPointer(bitangentHandle, mBitangentDataSize, GLES20.GL_FLOAT, false, mStrideBytes, mBitangentOffset);
+		GLES20.glVertexAttribPointer(bitangentHandle, mBitangentSize, GLES20.GL_FLOAT, false, mStrideBytes, mBitangentOffset);
 		GLES20.glEnableVertexAttribArray(bitangentHandle);
 		
 		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVertexCounts[circleIndex][sectorIndex]);
