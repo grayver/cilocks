@@ -14,24 +14,24 @@ import android.util.Log;
 public class CircleLockRenderer implements GLSurfaceView.Renderer {
 
 	private static final String TAG = CircleLockRenderer.class.getSimpleName();
-	
+
 	private MeshContainer mMeshContainer;
 	private TextureContainer mTextureContainer;
 	private ShaderContainer mShaderContainer;
-	
+
 	private CircleLockLock mCircleLock;
-	
-    private int mLightHandle;
-    private int mMVPMatrixHandle;
-    private int mMVMatrixHandle;
-    private int mColorMapHandle;
-    private int mNormalMapHandle;
-    
-    private int mPositionHandle;
-    private int mUVHandle;
-    private int mNormalHandle;
-    private int mTangentHandle;
-    private int mBitangentHandle;
+
+	private int mLightHandle;
+	private int mMVPMatrixHandle;
+	private int mMVMatrixHandle;
+	private int mColorMapHandle;
+	private int mNormalMapHandle;
+
+	private int mPositionHandle;
+	private int mUVHandle;
+	private int mNormalHandle;
+	private int mTangentHandle;
+	private int mBitangentHandle;
 	
 	/**
 	 * Store the model matrix. This matrix is used to move models from object space (where each model can be thought
@@ -77,7 +77,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 			for (int j = 0; j < mCircleLock.getCircle(i).getSectorCount(); j++) {
 				Matrix.setIdentityM(mModelMatrix, 0);
 				
-				
+				Matrix.rotateM(mModelMatrix, 0, 90.0f, 1.0f, 0.0f, 0.0f);
 				
 				// This multiplies the view matrix by the model matrix, and stores the result in the MV matrix.
 				Matrix.multiplyMM(mMVMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
@@ -114,10 +114,10 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		final float bottom = Math.min(-backRatio, -1.0f);
 		final float top = Math.max(backRatio, 1.0f);
 		
-		final float near = 1.0f;
-		final float far = 10.0f;
+		final float near = 4.0f;
+		final float far = 6.0f;
 		
-		Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+		Matrix.orthoM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
 	}
 
 	@Override
@@ -126,7 +126,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		
 		// Initialize view matrix
-		Matrix.setLookAtM(mViewMatrix, 0, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		Matrix.setLookAtM(mViewMatrix, 0, 0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 		
 		// Set light position
 		Matrix.multiplyMV(mVLightPosition, 0, mViewMatrix, 0, mLightPosition, 0);
@@ -137,18 +137,18 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 			mTextureContainer.loadTextures();
 			mShaderContainer.loadShaders();
 			System.gc();
-			
-		    mLightHandle = mShaderContainer.getLightHandle();
-		    mMVPMatrixHandle = mShaderContainer.getMVPMatrixHandle();
-		    mMVMatrixHandle = mShaderContainer.getMVMatrixHandle();
-		    mColorMapHandle = mShaderContainer.getColorMapHandle();
-		    mNormalMapHandle = mShaderContainer.getNormalMapHandle();
-		    
-		    mPositionHandle = mShaderContainer.getPositionHandle();
-		    mUVHandle = mShaderContainer.getUVHandle();
-		    mNormalHandle = mShaderContainer.getNormalHandle();
-		    mTangentHandle = mShaderContainer.getTangentHandle();
-		    mBitangentHandle = mShaderContainer.getBitangentHandle();
+
+			mLightHandle = mShaderContainer.getLightHandle();
+			mMVPMatrixHandle = mShaderContainer.getMVPMatrixHandle();
+			mMVMatrixHandle = mShaderContainer.getMVMatrixHandle();
+			mColorMapHandle = mShaderContainer.getColorMapHandle();
+			mNormalMapHandle = mShaderContainer.getNormalMapHandle();
+
+			mPositionHandle = mShaderContainer.getPositionHandle();
+			mUVHandle = mShaderContainer.getUVHandle();
+			mNormalHandle = mShaderContainer.getNormalHandle();
+			mTangentHandle = mShaderContainer.getTangentHandle();
+			mBitangentHandle = mShaderContainer.getBitangentHandle();
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
 			throw new RuntimeException("Error loading resources.");

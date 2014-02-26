@@ -4,17 +4,17 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Locale;
+import java.nio.FloatBuffer;
 
 import android.content.Context;
 import android.opengl.GLES20;
 
 public class MeshContainer {
 	// Circle count in mesh geometry
-	private final int mCircleCount = 3;
+	private int mCircleCount;
 	
-	// Sector count int mesh geometry
-	private final int mSectorCount = 8;
+	// Sector count in mesh geometry
+	private int mSectorCount;
 	
 	
 	/** How many bytes per float. */
@@ -51,7 +51,10 @@ public class MeshContainer {
 	private final int mBitangentDataSize = 3;
 	
 	/** How many elements per vertex. */
-	private final int mStrideBytes = (mBitangentOffset + mBitangentDataSize) * mBytesPerFloat;
+	private final int mElementsPerVertex = mBitangentOffset + mBitangentDataSize;
+	
+	/** How many bytes per vertex. */
+	private final int mStrideBytes = mElementsPerVertex * mBytesPerFloat;
 	
 	
 	// Activity context
@@ -63,31 +66,21 @@ public class MeshContainer {
 	// Vertex counts
 	private int[][] mVertexCounts;
 	
-	// Resource name prefixes
-	private final String[] mCirclePrefixes = new String[] { "i", "m", "o" };
-	
 	private boolean mIsLoaded;
 	
 	public MeshContainer(Context context) {
 		mContext = context;
-		mBufferIds = new int[mCircleCount][mSectorCount];
-		mVertexCounts = new int[mCircleCount][mSectorCount];
 		mIsLoaded = false;
 	}
 	
-	protected int[][] resolveResources() {
-		int[][] resIds = new int[mCircleCount][mSectorCount];
-		for (int i = 0; i < mCircleCount; i++)
-			for (int j = 0; j < mSectorCount; j++) {
-				String resName = String.format(Locale.ENGLISH, "mesh_%s%d", mCirclePrefixes[i], j + 1);
-				resIds[i][j] = mContext.getResources().getIdentifier(resName, "raw", mContext.getPackageName());
-			}
-		
-		return resIds;
-	}
-	
 	public void loadMeshes() throws IOException {
-		int[][] resIds = resolveResources();
+		int resId = mContext.getResources().getIdentifier("mesh_3x8", "raw", mContext.getPackageName());
+		DataInputStream is = new DataInputStream(mContext.getResources().openRawResource(resId));
+		
+		mCircleCount = is.readInt();
+		mSectorCount = is.readInt();
+		mBufferIds = new int[mCircleCount][mSectorCount];
+		mVertexCounts = new int[mCircleCount][mSectorCount];
 		
 		int[] flatBufferIds = new int[mCircleCount * mSectorCount];
 		GLES20.glGenBuffers(mCircleCount * mSectorCount, flatBufferIds, 0);
@@ -95,27 +88,39 @@ public class MeshContainer {
 		
 		for (int i = 0; i < mCircleCount; i++)
 			for (int j = 0; j < mSectorCount; j++) {
-				DataInputStream is = new DataInputStream(mContext.getResources().openRawResource(resIds[i][j]));
 				
-				int vertexCount = is.readInt();
-				int bufferSize = vertexCount * mStrideBytes * mBytesPerFloat;
+				int faceCount = is.readInt();
+				int vertexCount = faceCount * 3;
+				int bufferSize = vertexCount * mStrideBytes;
 				byte[] buffer = new byte[bufferSize];
 				is.read(buffer, 0, bufferSize);
-				is.close();
-				
-				ByteBuffer glBuffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.BIG_ENDIAN);
-				glBuffer.put(buffer, 0, bufferSize);
-				glBuffer.position(0);
+
+				ByteBuffer byteBuffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.BIG_ENDIAN);
+				byteBuffer.put(buffer, 0, bufferSize);
+				byteBuffer.position(0);
+
+				FloatBuffer flBuffer;
+				if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
+					flBuffer = byteBuffer.asFloatBuffer();
+				} else {
+					FloatBuffer cnvBuffer = byteBuffer.asFloatBuffer();
+					float[] cnvArray = new float[cnvBuffer.capacity()];
+					cnvBuffer.get(cnvArray);
+					flBuffer = FloatBuffer.allocate(cnvArray.length);
+					flBuffer.put(cnvArray);
+				}
+				flBuffer.position(0);
 				
 				GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, flatBufferIds[counter]);
-				GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, bufferSize, glBuffer, GLES20.GL_STATIC_DRAW);
+				GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, flBuffer.capacity() * mBytesPerFloat, flBuffer, GLES20.GL_STATIC_DRAW);
 				GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-				
+
 				mBufferIds[i][j] = flatBufferIds[counter];
 				mVertexCounts[i][j] = vertexCount;
 				counter++;
 			}
 		
+		is.close();
 		mIsLoaded = true;
 	}
 	

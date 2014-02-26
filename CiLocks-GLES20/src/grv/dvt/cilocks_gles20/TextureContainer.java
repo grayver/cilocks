@@ -65,7 +65,7 @@ public class TextureContainer {
 		int counter = 0;
 		
 		for (int i = 0; i < mColorCount; i++) {
-			String resName = String.format(Locale.ENGLISH, "texture_stone_tex%d", i + 1);
+			String resName = String.format(Locale.ENGLISH, "texture_stone%d", i + 1);
 			loadTexture(flatTexIds[counter], resName);
 			
 			mColorTextureIds[i] = flatTexIds[counter];
@@ -73,7 +73,7 @@ public class TextureContainer {
 		}
 		
 		for (int i = 0; i < mSymbolCount; i++) {
-			String resName = String.format(Locale.ENGLISH, "texture_symbol_map%d", i + 1);
+			String resName = String.format(Locale.ENGLISH, "texture_symbol%d", i + 1);
 			loadTexture(flatTexIds[counter], resName);
 			
 			mSymbolTextureIds[i] = flatTexIds[counter];

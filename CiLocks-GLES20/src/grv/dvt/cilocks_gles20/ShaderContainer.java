@@ -11,30 +11,30 @@ import android.util.Log;
 public class ShaderContainer {
 	
 	private static final String TAG = ShaderContainer.class.getSimpleName();
-	
+
 	// Activity context
 	private Context mContext;
-	
+
 	private int mVertexShaderHandle;
-	
+
 	private int mFragmentShaderHandle;
 	
 	private int mProgramHandle;
-	
-    private int mLightHandle;
-    private int mMVPMatrixHandle;
-    private int mMVMatrixHandle;
-    private int mColorMapHandle;
-    private int mNormalMapHandle;
-    
-    private int mPositionHandle;
-    private int mUVHandle;
-    private int mNormalHandle;
-    private int mTangentHandle;
-    private int mBitangentHandle;
-	
-    private boolean mIsLoaded;
-    
+
+	private int mLightHandle;
+	private int mMVPMatrixHandle;
+	private int mMVMatrixHandle;
+	private int mColorMapHandle;
+	private int mNormalMapHandle;
+
+	private int mPositionHandle;
+	private int mUVHandle;
+	private int mNormalHandle;
+	private int mTangentHandle;
+	private int mBitangentHandle;
+
+	private boolean mIsLoaded;
+
 	public ShaderContainer(Context context) {
 		mContext = context;
 		mIsLoaded = false;
@@ -140,31 +140,31 @@ public class ShaderContainer {
 				mProgramHandle = 0;
 			}
 		}
-		
+
 		if (mProgramHandle == 0) {
 			throw new RuntimeException("Error creating program.");
 		}
 		
-        // Release shader compiler
-        GLES20.glReleaseShaderCompiler();
-		
-        // Set program handles. These will later be used to pass in values to the program.
-        mLightHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Light");
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix");
-        mMVMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVMatrix");
-        mColorMapHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_ColorMap");
-        mNormalMapHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_NormalMap");
-        
-        mPositionHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Position");
-        mUVHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_UV");
-        mNormalHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Normal");
-        mTangentHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Tangent");
-        mBitangentHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Bitangent");
-        
-        // Tell OpenGL to use this program when rendering.
-        GLES20.glUseProgram(mProgramHandle);
-        
-        mIsLoaded = true;
+		// Release shader compiler
+		GLES20.glReleaseShaderCompiler();
+
+		// Set program handles. These will later be used to pass in values to the program.
+		mLightHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Light");
+		mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix");
+		mMVMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVMatrix");
+		mColorMapHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_ColorMap");
+		mNormalMapHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_NormalMap");
+
+		mPositionHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Position");
+		mUVHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_UV");
+		mNormalHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Normal");
+		mTangentHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Tangent");
+		mBitangentHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Bitangent");
+
+		// Tell OpenGL to use this program when rendering.
+		GLES20.glUseProgram(mProgramHandle);
+
+		mIsLoaded = true;
 	}
 	
 	public void releaseShaders() {
