@@ -165,8 +165,8 @@ public class Converter {
 		//	return;
 		
 		//String filename = args[0];
-		String filename = "D:\\Development\\Android\\Model\\mycircles.obj";
-		//String filename = "D:\\Dropbox\\CircleLocks\\model\\mycircles.obj";
+		//String filename = "D:\\Development\\Android\\Model\\mycircles.obj";
+		String filename = "D:\\Dropbox\\CircleLocks\\model\\mycircles.obj";
 		objName = null;
 		
 		try {
@@ -191,7 +191,7 @@ public class Converter {
 					break;
 					
 				case "vt":
-					texCoords.add(new TexCoord(Float.parseFloat(lexems[1]), Float.parseFloat(lexems[2])));
+					texCoords.add(new TexCoord(Float.parseFloat(lexems[1]), 1.0f - Float.parseFloat(lexems[2])));
 					break;
 					
 				case "vn":
