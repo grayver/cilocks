@@ -33,6 +33,9 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	private int mTangentHandle;
 	private int mBitangentHandle;
 	
+	/** Matrix stack utility */
+	private MatrixStack mMatrixStack;
+	
 	/**
 	 * Store the model matrix. This matrix is used to move models from object space (where each model can be thought
 	 * of being located at the center of the universe) to world space.
@@ -66,6 +69,8 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		mShaderContainer = new ShaderContainer(context);
 		
 		mCircleLock = circleLock;
+		
+		mMatrixStack = new MatrixStack(3);
 	}
 	
 	@Override
@@ -79,13 +84,13 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		for (int i = 0; i < mCircleLock.getCircleCount(); i++) {
 			CircleLockCircle circle = mCircleLock.getCircle(i);
 
-			float[] lockMatrix = mModelMatrix.clone();
+			mMatrixStack.push(mModelMatrix, 0);
 			Matrix.rotateM(mModelMatrix, 0, circle.getAngleDeg(), 0.0f, 0.0f, 1.0f);
 			
 			for (int j = 0; j < mCircleLock.getCircle(i).getSectorCount(); j++) {
 				CircleLockSector sector = circle.getSector(j);
 				
-				float[] circleMatrix = mModelMatrix.clone();
+				mMatrixStack.push(mModelMatrix, 0);
 				float sectorAngleRad = (float)Math.PI * (1.0f - (j + 0.5f) * 2f / circle.getSectorCount());
 				if (sector.getAngleDeg() > 1e-6f) // angle is always between 0 and 360 degrees
 					Matrix.rotateM(mModelMatrix, 0, sector.getAngleDeg(),
@@ -107,10 +112,10 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 				
 				mMeshContainer.drawMesh(i, j, mPositionHandle, mUVHandle, mNormalHandle, mTangentHandle, mBitangentHandle);
 				
-				mModelMatrix = circleMatrix;
+				mMatrixStack.pop(mModelMatrix, 0);
 			}
 			
-			mModelMatrix = lockMatrix;
+			mMatrixStack.pop(mModelMatrix, 0);
 		}
 	}
 
