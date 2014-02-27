@@ -6,6 +6,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -15,6 +16,9 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 
 	private static final String TAG = CircleLockRenderer.class.getSimpleName();
 
+	private float mScreenWidth;
+	private float mScreenHeight;
+	
 	private MeshContainer mMeshContainer;
 	private TextureContainer mTextureContainer;
 	private ShaderContainer mShaderContainer;
@@ -48,8 +52,14 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	 */
 	private float[] mViewMatrix = new float[16];
 	
+	/** Inverse view matrix for pointer coordinates detection. */
+	private float[] mViewInvMatrix = new float[16];
+	
 	/** Store the projection matrix. This is used to project the scene onto a 2D viewport. */
 	private float[] mProjectionMatrix = new float[16];
+	
+	/** Inverse projection matrix for pointer coordinates detection. */
+	private float[] mProjectionInvMatrix = new float[16];
 	
 	/** Allocate storage for modelview matrix. Will be passed into the shader program. */
 	private float[] mMVMatrix = new float[16];
@@ -62,6 +72,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	
 	/** Light position in view coordinates. */
 	private float[] mVLightPosition = new float[4];
+	
 	
 	public CircleLockRenderer(Context context, CircleLockLock circleLock) {
 		mMeshContainer = new MeshContainer(context);
@@ -124,6 +135,10 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		// Set the OpenGL viewport to the same size as the surface.
 		GLES20.glViewport(0, 0, width, height);
 		
+		// Save width and height for point projection
+		mScreenWidth = width;
+		mScreenHeight = height;
+		
 		// Create a new perspective projection matrix. The height will stay the same
 		// while the width will vary as per aspect ratio.
 		final float ratio = (float)width / height;
@@ -139,6 +154,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		final float far = 6.0f;
 		
 		Matrix.orthoM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+		Matrix.invertM(mProjectionInvMatrix, 0, mProjectionMatrix, 0);
 	}
 
 	@Override
@@ -153,6 +169,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		
 		// Initialize view matrix
 		Matrix.setLookAtM(mViewMatrix, 0, 0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		Matrix.invertM(mViewInvMatrix, 0, mViewMatrix, 0);
 		
 		// Set light position
 		Matrix.multiplyMV(mVLightPosition, 0, mViewMatrix, 0, mLightPosition, 0);
@@ -185,5 +202,19 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		mMeshContainer.releaseBuffers();
 		mTextureContainer.releaseTextures();
 		mShaderContainer.releaseShaders();
+	}
+	
+	public void getPointProjection(PointF point) {
+		float[] rayProj = new float[] { 2.0f * point.x / mScreenWidth - 1.0f, 1.0f - 2.0f * point.y / mScreenHeight, -1.0f, 1.0f };
+		
+		float[] rayView = new float[4];
+		Matrix.multiplyMV(rayView, 0, mProjectionInvMatrix, 0, rayProj, 0);
+		rayView[2] = -1.0f;
+		rayView[3] = 0.0f;
+		
+		float[] ray = new float[4];
+		Matrix.multiplyMV(ray, 0, mViewInvMatrix, 0, rayView, 0);
+		
+
 	}
 }
