@@ -73,9 +73,23 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		// Redraw background color
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 		
-		for (int i = 0; i < mCircleLock.getCircleCount(); i++)
+		// Init model matrix
+		Matrix.setIdentityM(mModelMatrix, 0);
+		
+		for (int i = 0; i < mCircleLock.getCircleCount(); i++) {
+			CircleLockCircle circle = mCircleLock.getCircle(i);
+
+			float[] lockMatrix = mModelMatrix.clone();
+			Matrix.rotateM(mModelMatrix, 0, circle.getAngleDeg(), 0.0f, 0.0f, 1.0f);
+			
 			for (int j = 0; j < mCircleLock.getCircle(i).getSectorCount(); j++) {
-				Matrix.setIdentityM(mModelMatrix, 0);
+				CircleLockSector sector = circle.getSector(j);
+				
+				float[] circleMatrix = mModelMatrix.clone();
+				float sectorAngleRad = (float)Math.PI * (1.0f - (j + 0.5f) * 2f / circle.getSectorCount());
+				if (sector.getAngleDeg() > 1e-6f) // angle is always between 0 and 360 degrees
+					Matrix.rotateM(mModelMatrix, 0, sector.getAngleDeg(),
+							(float)Math.cos(sectorAngleRad), (float)Math.sin(sectorAngleRad), 0.0f);
 				
 				// This multiplies the view matrix by the model matrix, and stores the result in the MV matrix.
 				Matrix.multiplyMM(mMVMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
@@ -87,13 +101,17 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 				GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVMatrix, 0);
 				GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 				
-				CircleLockSector sector = mCircleLock.getCircle(i).getSector(j);
 				mTextureContainer.bindTextures(sector.getColorIndex(), sector.getSymbolIndex());
 				GLES20.glUniform1i(mColorMapHandle, 0);
 				GLES20.glUniform1i(mNormalMapHandle, 1);
 				
 				mMeshContainer.drawMesh(i, j, mPositionHandle, mUVHandle, mNormalHandle, mTangentHandle, mBitangentHandle);
+				
+				mModelMatrix = circleMatrix;
 			}
+			
+			mModelMatrix = lockMatrix;
+		}
 	}
 
 	@Override
@@ -158,4 +176,9 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		}
 	}
 
+	public void releaseResources() {
+		mMeshContainer.releaseBuffers();
+		mTextureContainer.releaseTextures();
+		mShaderContainer.releaseShaders();
+	}
 }

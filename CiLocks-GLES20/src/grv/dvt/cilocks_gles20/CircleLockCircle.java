@@ -13,8 +13,11 @@ public class CircleLockCircle {
 	/** Circle state */
 	private CircleLockCircle.State mState;
 	
-	/** Circle rotation angle */
+	/** Circle rotation angle in radians */
 	private float mAngleRad;
+	
+	/** Circle rotation angle in degrees */
+	private float mAngleDeg;
 	
 	/** Sector count */
 	private int mSectorCount;
@@ -26,6 +29,9 @@ public class CircleLockCircle {
 	/** Constructor */
 	public CircleLockCircle(int sectorCount, int[] colorIndexes, int[] symbolIndexes) {
 		this.mState = CircleLockCircle.State.IDLE;
+		
+		this.mAngleRad = 0.0f;
+		this.mAngleDeg = 0.0f;
 		
 		this.mSectorCount = sectorCount;
 		this.mSectors = new CircleLockSector[sectorCount];
@@ -45,13 +51,18 @@ public class CircleLockCircle {
 		return this.mAngleRad;
 	}
 	
+	public float getAngleDeg() {
+		return this.mAngleDeg;
+	}
+	
 	public void setAngleRad(float value) {
-		if (value >= 2 * Math.PI)
-			value -= 2 * Math.PI;
-		if (value < 0)
-			value += 2 * Math.PI;
+		if (value >= 2f * Math.PI)
+			value -= 2f * Math.PI;
+		if (value < 0f)
+			value += 2f * Math.PI;
 		
 		this.mAngleRad = value;
+		this.mAngleDeg = (float)Math.toDegrees(value);
 	}
 	
 	public int getSectorCount() {
