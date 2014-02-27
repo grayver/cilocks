@@ -55,7 +55,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	private float[] mMVPMatrix = new float[16];
 	
 	/** Light position in world coordinates. */
-	private float[] mLightPosition = new float[] { 0.0f, 0.0f, 0.15f, 1.0f };
+	private float[] mLightPosition = new float[] { 0.0f, 0.0f, 0.3f, 1.0f };
 	
 	/** Light position in view coordinates. */
 	private float[] mVLightPosition = new float[4];
@@ -122,6 +122,11 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
 		// Set the background frame color
 		GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		
+		// Enable depth buffer
+		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+		GLES20.glDepthFunc(GLES20.GL_LEQUAL);
+		GLES20.glDepthMask(true);
 		
 		// Initialize view matrix
 		Matrix.setLookAtM(mViewMatrix, 0, 0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);

@@ -17,6 +17,9 @@ public class CircleLockView extends GLSurfaceView {
 		// Request an OpenGL ES 2.0 compatible context.
 		setEGLContextClientVersion(2);
 		
+		// Set OpenGL configuration
+		setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+		
 		// Test circle lock
 		int[][] colorIndexes = new int[][] {
 				{ 0, 1, 0, 0, 1, 1, 0, 1 },
