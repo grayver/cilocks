@@ -17,6 +17,7 @@ public class CircleLockActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Log.d(TAG, "Creating..");
 		super.onCreate(savedInstanceState);
 
 		// Check if the system supports OpenGL ES 2.0.
@@ -46,26 +47,26 @@ public class CircleLockActivity extends Activity {
 	
 	@Override
 	protected void onDestroy() {
-		Log.d(TAG, "Destroying...");
+		Log.d(TAG, "Destroying..");
 		super.onDestroy();
 	}
 
 	@Override
 	protected void onStop() {
-		Log.d(TAG, "Stopping...");
+		Log.d(TAG, "Stopping..");
 		super.onStop();
 	}
 	
 	@Override
 	protected void onResume() {
-		Log.d(TAG, "Resuming...");
+		Log.d(TAG, "Resuming..");
 		super.onResume();
 		mView.onResume();
 	}
 	
 	@Override
 	protected void onPause() {
-		Log.d(TAG, "Pausing...");
+		Log.d(TAG, "Pausing..");
 		super.onPause();
 		mView.onPause();
 	}

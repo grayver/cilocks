@@ -157,6 +157,8 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onSurfaceChanged(GL10 glUnused, int width, int height) {
+		Log.d(TAG, "Changing surface.. Width: " + width + " height: " + height);
+		
 		// Set the OpenGL viewport to the same size as the surface.
 		GLES20.glViewport(0, 0, width, height);
 		
@@ -184,6 +186,8 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
+		Log.d(TAG, "Creating surface..");
+		
 		// Set the background frame color
 		GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		

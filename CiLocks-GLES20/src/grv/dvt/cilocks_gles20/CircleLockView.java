@@ -4,10 +4,13 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.support.v4.view.MotionEventCompat;
+import android.util.Log;
 import android.view.MotionEvent;
 
 public class CircleLockView extends GLSurfaceView {
-
+	
+	private static final String TAG = CircleLockView.class.getSimpleName();
+	
 	private CircleLockRenderer mRenderer;
 	private TouchVectorField mVectorField;
 	private CircleLockLock mCircleLock;
@@ -43,8 +46,34 @@ public class CircleLockView extends GLSurfaceView {
 		
 		
 		mVectorField = new TouchVectorField();
+		mTouchController = new TouchController(3, mRenderer.getCircleBorders(), this);
+	}
+	
+	@Override
+	public void onPause() {
+		Log.d(TAG, "Pausing..");
+		super.onPause();
+		
+		mRenderer.releaseResources();
+		
+		boolean retry = true;
+		mAnimationThread.terminate();
+		while (retry) {
+			try {
+				mAnimationThread.join();
+				retry = false;
+			} catch (InterruptedException e) {
+				//
+			}
+		}
+	}
+	
+	@Override
+	public void onResume() {
+		Log.d(TAG, "Resuming..");
+		super.onResume();
+		
 		mAnimationThread = new AnimationThread(this);
-		mTouchController = new TouchController(3, mRenderer.getCircleBorders(), mAnimationThread, this);
 	}
 	
 	@Override
@@ -76,5 +105,9 @@ public class CircleLockView extends GLSurfaceView {
 		}
 
 		return true;
+	}
+	
+	public AnimationThread getAnimationThread() {
+		return mAnimationThread;
 	}
 }

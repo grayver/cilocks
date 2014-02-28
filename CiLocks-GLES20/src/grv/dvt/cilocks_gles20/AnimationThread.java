@@ -3,8 +3,11 @@ package grv.dvt.cilocks_gles20;
 import java.util.ArrayList;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 public class AnimationThread extends Thread {
+	
+	private static final String TAG = AnimationThread.class.getSimpleName();
 	
 	private static final int mMaxFPS = 30;
 	private static final long mFramePeriod = 1000 / mMaxFPS;
@@ -22,16 +25,28 @@ public class AnimationThread extends Thread {
 		mIsRunning = false;
 	}
 	
-	public void addAnimator(Animator animator) {
+	public synchronized void addAnimator(Animator animator) {
 		mAnimators.add(animator);
 		if (!isAlive()) {
+			Log.d(TAG, "Starting animation thread..");
 			mIsRunning = true;
 			start();
+		} else {
+			Log.d(TAG, "Notifying about new animations..");
+			notify();
+		}
+	}
+	
+	public synchronized void terminate() {
+		mIsRunning = false;
+		if (isAlive()) {
+			Log.d(TAG, "Notifying about termination..");
+			notify();
 		}
 	}
 	
 	@Override
-	public void run() {
+	public synchronized void run() {
 		while (this.mIsRunning) {
 			long startTime = SystemClock.uptimeMillis();
 			
@@ -59,7 +74,12 @@ public class AnimationThread extends Thread {
 			}
 			
 			if (mAnimators.isEmpty())
-				mIsRunning = false;
+				try {
+					Log.d(TAG, "Waiting for animations..");
+					wait();
+				} catch (InterruptedException e) {
+					// do nothing
+				}
 		}
 	}
 }
