@@ -114,13 +114,14 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		
 		// Init model matrix
 		Matrix.setIdentityM(mModelMatrix, 0);
+		Matrix.scaleM(mModelMatrix, 0, -1.0f, 1.0f, 1.0f);
 		
 		synchronized (mCircleLock) {
 			for (int i = 0; i < mCircleLock.getCircleCount(); i++) {
 				CircleLockCircle circle = mCircleLock.getCircle(i);
-	
+				
 				mMatrixStack.push(mModelMatrix, 0);
-				Matrix.rotateM(mModelMatrix, 0, circle.getAngleDeg(), 0.0f, 0.0f, 1.0f);
+				Matrix.rotateM(mModelMatrix, 0, circle.getAngleDeg(), 0.0f, 0.0f, -1.0f);
 				
 				for (int j = 0; j < mCircleLock.getCircle(i).getSectorCount(); j++) {
 					CircleLockSector sector = circle.getSector(j);

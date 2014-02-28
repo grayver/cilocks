@@ -98,7 +98,7 @@ public class TouchController {
 							
 							float stepAngleRad = (float)(2 * Math.PI / circle.getSectorCount());
 							
-							float sectorAngleRad = (float)Math.PI - (initAngleRad - circle.getAngleRad());
+							float sectorAngleRad = initAngleRad - circle.getAngleRad();
 							if (sectorAngleRad < 0.0f)
 								sectorAngleRad += 2f * Math.PI;
 							
