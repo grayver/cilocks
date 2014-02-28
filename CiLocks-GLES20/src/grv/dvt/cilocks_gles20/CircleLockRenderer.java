@@ -73,6 +73,29 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	/** Light position in view coordinates. */
 	private float[] mVLightPosition = new float[4];
 	
+	/** Camera position in world coordinates. */
+	private float[] mCameraPosition = new float[] { 0.0f, 0.0f, 5.0f, 1.0f };
+	
+	
+	/**
+	 * Infrastructure for touch point projection.
+	 */
+	private float[] mTouchPlaneNormal = new float[] { 0.0f, 0.0f, 1.0f };
+	private float[] mTouchPlanePoint = new float[] { 0.0f, 0.0f, 0.0485f };
+	private float mTouchNCDotProduct =
+			mTouchPlaneNormal[0] * mCameraPosition[0] +
+			mTouchPlaneNormal[1] * mCameraPosition[1] +
+			mTouchPlaneNormal[2] * mCameraPosition[2];
+	private float mTouchNPDotProduct =
+			mTouchPlaneNormal[0] * mTouchPlanePoint[0] +
+			mTouchPlaneNormal[1] * mTouchPlanePoint[1] +
+			mTouchPlaneNormal[2] * mTouchPlanePoint[2];
+	
+	/**
+	 * Infrastructure for circle collision detection
+	 */
+	private float[] mCircleBorders = new float[] { 0.338f, 0.558f, 0.777f, 0.996f };
+	
 	
 	public CircleLockRenderer(Context context, CircleLockLock circleLock) {
 		mMeshContainer = new MeshContainer(context);
@@ -92,41 +115,43 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		// Init model matrix
 		Matrix.setIdentityM(mModelMatrix, 0);
 		
-		for (int i = 0; i < mCircleLock.getCircleCount(); i++) {
-			CircleLockCircle circle = mCircleLock.getCircle(i);
-
-			mMatrixStack.push(mModelMatrix, 0);
-			Matrix.rotateM(mModelMatrix, 0, circle.getAngleDeg(), 0.0f, 0.0f, 1.0f);
-			
-			for (int j = 0; j < mCircleLock.getCircle(i).getSectorCount(); j++) {
-				CircleLockSector sector = circle.getSector(j);
-				
+		synchronized (mCircleLock) {
+			for (int i = 0; i < mCircleLock.getCircleCount(); i++) {
+				CircleLockCircle circle = mCircleLock.getCircle(i);
+	
 				mMatrixStack.push(mModelMatrix, 0);
-				float sectorAngleRad = (float)Math.PI * (1.0f - (j + 0.5f) * 2f / circle.getSectorCount());
-				if (sector.getAngleDeg() > 1e-6f) // angle is always between 0 and 360 degrees
-					Matrix.rotateM(mModelMatrix, 0, sector.getAngleDeg(),
-							(float)Math.cos(sectorAngleRad), (float)Math.sin(sectorAngleRad), 0.0f);
+				Matrix.rotateM(mModelMatrix, 0, circle.getAngleDeg(), 0.0f, 0.0f, 1.0f);
 				
-				// This multiplies the view matrix by the model matrix, and stores the result in the MV matrix.
-				Matrix.multiplyMM(mMVMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-				
-				// This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix.
-				Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVMatrix, 0);
-				
-				GLES20.glUniform3fv(mLightHandle, 1, mVLightPosition, 0);
-				GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVMatrix, 0);
-				GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-				
-				mTextureContainer.bindTextures(sector.getColorIndex(), sector.getSymbolIndex());
-				GLES20.glUniform1i(mColorMapHandle, 0);
-				GLES20.glUniform1i(mNormalMapHandle, 1);
-				
-				mMeshContainer.drawMesh(i, j, mPositionHandle, mUVHandle, mNormalHandle, mTangentHandle, mBitangentHandle);
+				for (int j = 0; j < mCircleLock.getCircle(i).getSectorCount(); j++) {
+					CircleLockSector sector = circle.getSector(j);
+					
+					mMatrixStack.push(mModelMatrix, 0);
+					float sectorAngleRad = (float)Math.PI * (1.0f - (j + 0.5f) * 2f / circle.getSectorCount());
+					if (sector.getAngleDeg() > 1e-6f) // angle is always between 0 and 360 degrees
+						Matrix.rotateM(mModelMatrix, 0, sector.getAngleDeg(),
+								(float)Math.cos(sectorAngleRad), (float)Math.sin(sectorAngleRad), 0.0f);
+					
+					// This multiplies the view matrix by the model matrix, and stores the result in the MV matrix.
+					Matrix.multiplyMM(mMVMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+					
+					// This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix.
+					Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVMatrix, 0);
+					
+					GLES20.glUniform3fv(mLightHandle, 1, mVLightPosition, 0);
+					GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVMatrix, 0);
+					GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+					
+					mTextureContainer.bindTextures(sector.getColorIndex(), sector.getSymbolIndex());
+					GLES20.glUniform1i(mColorMapHandle, 0);
+					GLES20.glUniform1i(mNormalMapHandle, 1);
+					
+					mMeshContainer.drawMesh(i, j, mPositionHandle, mUVHandle, mNormalHandle, mTangentHandle, mBitangentHandle);
+					
+					mMatrixStack.pop(mModelMatrix, 0);
+				}
 				
 				mMatrixStack.pop(mModelMatrix, 0);
 			}
-			
-			mMatrixStack.pop(mModelMatrix, 0);
 		}
 	}
 
@@ -168,7 +193,8 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		GLES20.glDepthMask(true);
 		
 		// Initialize view matrix
-		Matrix.setLookAtM(mViewMatrix, 0, 0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		Matrix.setLookAtM(mViewMatrix, 0, mCameraPosition[0], mCameraPosition[1], mCameraPosition[2],
+				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 		Matrix.invertM(mViewInvMatrix, 0, mViewMatrix, 0);
 		
 		// Set light position
@@ -204,7 +230,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		mShaderContainer.releaseShaders();
 	}
 	
-	public void getPointProjection(PointF point) {
+	public PointF getPointProjection(PointF point) {
 		float[] rayProj = new float[] { 2.0f * point.x / mScreenWidth - 1.0f, 1.0f - 2.0f * point.y / mScreenHeight, -1.0f, 1.0f };
 		
 		float[] rayView = new float[4];
@@ -215,6 +241,27 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		float[] ray = new float[4];
 		Matrix.multiplyMV(ray, 0, mViewInvMatrix, 0, rayView, 0);
 		
+		PointF result = new PointF();
+		result.x = ray[0];
+		result.y = ray[1];
+		return result; // temp stub
+		/*
+		float dist = Math.abs(mTouchNCDotProduct - mTouchNPDotProduct);
+		float denom = ray[0] * mTouchPlaneNormal[0] + ray[1] * mTouchPlaneNormal[1] + ray[2] * mTouchPlaneNormal[2];
 
+		if (Math.abs(denom) > 1e-6) {
+			float t = -(mTouchNCDotProduct + dist) / denom;
+			if (t > 0.0f) {
+				result.x = mCameraPosition[0] + ray[0] * t;
+				result.y = mCameraPosition[1] + ray[1] * t;
+			}
+		}
+		
+		return result;
+		*/
+	}
+
+	public float[] getCircleBorders() {
+		return mCircleBorders;
 	}
 }

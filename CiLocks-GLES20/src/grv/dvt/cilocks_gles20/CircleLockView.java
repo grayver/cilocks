@@ -10,6 +10,9 @@ public class CircleLockView extends GLSurfaceView {
 
 	private CircleLockRenderer mRenderer;
 	private TouchVectorField mVectorField;
+	private CircleLockLock mCircleLock;
+	private TouchController mTouchController;
+	private AnimationThread mAnimationThread;
 	
 	public CircleLockView(Context context) {
 		super(context);
@@ -29,17 +32,19 @@ public class CircleLockView extends GLSurfaceView {
 				{ 0, 1, 2, 1, 1, 0, 1, 2 },
 				{ 2, 0, 1, 2, 1, 1, 0, 1 },
 				{ 0, 1, 2, 1, 1, 0, 1, 2 } };
-		CircleLockLock circleLock = new CircleLockLock(3, 8, colorIndexes, symbolIndexes);
+		mCircleLock = new CircleLockLock(3, 8, colorIndexes, symbolIndexes);
 		
 		// Set renderer
-		mRenderer = new CircleLockRenderer(context, circleLock);
+		mRenderer = new CircleLockRenderer(context, mCircleLock);
 		setRenderer(mRenderer);
 		
 		// Render the view only when there is a change in the drawing data
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		
-		// Initialize vector field
+		
 		mVectorField = new TouchVectorField();
+		mAnimationThread = new AnimationThread(this);
+		mTouchController = new TouchController(3, mRenderer.getCircleBorders(), mAnimationThread, this);
 	}
 	
 	@Override
@@ -50,20 +55,23 @@ public class CircleLockView extends GLSurfaceView {
 		switch (action) {
 		case MotionEvent.ACTION_DOWN:
 		case MotionEvent.ACTION_POINTER_DOWN:
-			this.mVectorField.startVector(MotionEventCompat.getPointerId(event, index),
-				new PointF(MotionEventCompat.getX(event, index), MotionEventCompat.getY(event, index)));
+			mVectorField.startVector(MotionEventCompat.getPointerId(event, index),
+				mRenderer.getPointProjection(new PointF(MotionEventCompat.getX(event, index), MotionEventCompat.getY(event, index))));
 			break;
 		case MotionEvent.ACTION_UP:
 		case MotionEvent.ACTION_POINTER_UP:
-			this.mVectorField.releaseVector(MotionEventCompat.getPointerId(event, index));
+			mVectorField.releaseVector(MotionEventCompat.getPointerId(event, index));
+			mTouchController.processVectors(mVectorField, mCircleLock);
 			break;
 		case MotionEvent.ACTION_MOVE:
 			for (int i = 0; i < MotionEventCompat.getPointerCount(event); i++)
-				this.mVectorField.moveVector(MotionEventCompat.getPointerId(event, i),
-					new PointF(MotionEventCompat.getX(event, i), MotionEventCompat.getY(event, i)));
+				mVectorField.moveVector(MotionEventCompat.getPointerId(event, i),
+						mRenderer.getPointProjection(new PointF(MotionEventCompat.getX(event, i), MotionEventCompat.getY(event, i))));
+			mTouchController.processVectors(mVectorField, mCircleLock);
 			break;
 		case MotionEvent.ACTION_CANCEL:
 			this.mVectorField.clearField();
+			mTouchController.processVectors(mVectorField, mCircleLock);
 			break;
 		}
 
