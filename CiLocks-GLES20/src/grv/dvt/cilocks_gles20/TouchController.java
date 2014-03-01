@@ -112,7 +112,7 @@ public class TouchController {
 									circle.setState(CircleLockCircle.State.SWAPPING);
 									swapCircle.setState(CircleLockCircle.State.SWAPPING);
 									
-									mView.getAnimationThread().addAnimator(new SwapAnimator(1000, circle, swapCircle, sectorIndex));
+									mView.getAnimationThread().addAnimator(new SwapAnimator(1000, circleLock, circle, swapCircle, sectorIndex));
 								}
 							} else if (tangentialComponent < 0.0f && i > 0) {
 								if (circleLock.getCircle(i - 1).getState() == CircleLockCircle.State.IDLE
@@ -122,7 +122,7 @@ public class TouchController {
 									circle.setState(CircleLockCircle.State.SWAPPING);
 									swapCircle.setState(CircleLockCircle.State.SWAPPING);
 									
-									mView.getAnimationThread().addAnimator(new SwapAnimator(1000, swapCircle, circle, sectorIndex));
+									mView.getAnimationThread().addAnimator(new SwapAnimator(1000, circleLock, swapCircle, circle, sectorIndex));
 								}
 							}
 						}
@@ -149,7 +149,7 @@ public class TouchController {
 				} else if (touchCount == 0)
 					synchronized (circleLock) {
 						circle.setState(CircleLockCircle.State.ANIMATING);
-						mView.getAnimationThread().addAnimator(new RollAnimator(200, circle));
+						mView.getAnimationThread().addAnimator(new RollAnimator(200, circleLock, circle));
 					}
 			}
 		}
