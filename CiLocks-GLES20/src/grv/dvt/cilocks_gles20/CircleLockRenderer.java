@@ -67,6 +67,9 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	/** Allocate storage for the final combined matrix. This will be passed into the shader program. */
 	private float[] mMVPMatrix = new float[16];
 	
+	/** Combined projection and view inverted matrix. */
+	private float[] mVPInvMatrix = new float[16];
+	
 	/** Light position in world coordinates. */
 	private float[] mLightPosition = new float[] { 0.0f, 0.0f, 0.3f, 1.0f };
 	
@@ -74,7 +77,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	private float[] mVLightPosition = new float[4];
 	
 	/** Camera position in world coordinates. */
-	private float[] mCameraPosition = new float[] { 0.0f, 0.0f, 5.0f, 1.0f };
+	private float[] mCameraPosition = new float[] { 0.0f, 0.0f, 9.0f, 1.0f };
 	
 	
 	/**
@@ -82,10 +85,6 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	 */
 	private float[] mTouchPlaneNormal = new float[] { 0.0f, 0.0f, 1.0f };
 	private float[] mTouchPlanePoint = new float[] { 0.0f, 0.0f, 0.0485f };
-	private float mTouchNCDotProduct =
-			mTouchPlaneNormal[0] * mCameraPosition[0] +
-			mTouchPlaneNormal[1] * mCameraPosition[1] +
-			mTouchPlaneNormal[2] * mCameraPosition[2];
 	private float mTouchNPDotProduct =
 			mTouchPlaneNormal[0] * mTouchPlanePoint[0] +
 			mTouchPlaneNormal[1] * mTouchPlanePoint[1] +
@@ -177,11 +176,12 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		final float bottom = Math.min(-backRatio, -1.0f);
 		final float top = Math.max(backRatio, 1.0f);
 		
-		final float near = 4.0f;
-		final float far = 6.0f;
+		final float near = 8.0f;
+		final float far = 10.0f;
 		
-		Matrix.orthoM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+		Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
 		Matrix.invertM(mProjectionInvMatrix, 0, mProjectionMatrix, 0);
+		Matrix.multiplyMM(mVPInvMatrix, 0, mViewInvMatrix, 0, mProjectionInvMatrix, 0);
 	}
 
 	@Override
@@ -200,6 +200,7 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		Matrix.setLookAtM(mViewMatrix, 0, mCameraPosition[0], mCameraPosition[1], mCameraPosition[2],
 				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 		Matrix.invertM(mViewInvMatrix, 0, mViewMatrix, 0);
+		Matrix.multiplyMM(mVPInvMatrix, 0, mViewInvMatrix, 0, mProjectionInvMatrix, 0);
 		
 		// Set light position
 		Matrix.multiplyMV(mVLightPosition, 0, mViewMatrix, 0, mLightPosition, 0);
@@ -235,34 +236,61 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	}
 	
 	public PointF getPointProjection(PointF point) {
-		float[] rayProj = new float[] { 2.0f * point.x / mScreenWidth - 1.0f, 1.0f - 2.0f * point.y / mScreenHeight, -1.0f, 1.0f };
+		float normalizedX = 2.0f * point.x / mScreenWidth - 1.0f;
+		float normalizedY = 1.0f - 2.0f * point.y / mScreenHeight;
 		
-		float[] rayView = new float[4];
-		Matrix.multiplyMV(rayView, 0, mProjectionInvMatrix, 0, rayProj, 0);
-		rayView[2] = -1.0f;
-		rayView[3] = 0.0f;
+		// points on near and far planes in normalized device coordinates 
+		float[] nearNdc = new float[] { normalizedX, normalizedY, -1.0f, 1.0f };
+		float[] farNdc = new float[] { normalizedX, normalizedY, 1.0f, 1.0f };
 		
-		float[] ray = new float[4];
-		Matrix.multiplyMV(ray, 0, mViewInvMatrix, 0, rayView, 0);
-		
-		PointF result = new PointF();
-		result.x = ray[0];
-		result.y = ray[1];
-		return result; // temp stub
-		/*
-		float dist = Math.abs(mTouchNCDotProduct - mTouchNPDotProduct);
-		float denom = ray[0] * mTouchPlaneNormal[0] + ray[1] * mTouchPlaneNormal[1] + ray[2] * mTouchPlaneNormal[2];
+		// convert points to world coordinates
+		float[] nearWorld = new float[4];
+		float[] farWorld = new float[4];
+		Matrix.multiplyMV(nearWorld, 0, mVPInvMatrix, 0, nearNdc, 0);
+		Matrix.multiplyMV(farWorld, 0, mVPInvMatrix, 0, farNdc, 0);
 
-		if (Math.abs(denom) > 1e-6) {
-			float t = -(mTouchNCDotProduct + dist) / denom;
+		Log.d(TAG, String.format("Near world %.2f %.2f %.2f %.2f", nearWorld[0], nearWorld[1], nearWorld[2], nearWorld[3]));
+		Log.d(TAG, String.format("Far world %.2f %.2f %.2f %.2f", farWorld[0], farWorld[1], farWorld[2], farWorld[3]));
+		
+		// divide by W
+		nearWorld[0] /= nearWorld[3];
+		nearWorld[1] /= nearWorld[3];
+		nearWorld[2] /= nearWorld[3];
+		
+		farWorld[0] /= farWorld[3];
+		farWorld[1] /= farWorld[3];
+		farWorld[2] /= farWorld[3];
+		
+		// determine ray direction
+		float[] ray = new float[] { farWorld[0] - nearWorld[0], farWorld[1] - nearWorld[1], farWorld[2] - nearWorld[2] };
+		
+		Log.d(TAG, String.format("Near world %.2f %.2f %.2f", nearWorld[0], nearWorld[1], nearWorld[2]));
+		Log.d(TAG, String.format("Far world %.2f %.2f %.2f", farWorld[0], farWorld[1], farWorld[2]));
+		Log.d(TAG, String.format("Ray %.2f %.2f %.2f", ray[0], ray[1], ray[2]));
+		
+		// determine ray with plane intersection
+		PointF result = new PointF();
+		
+		float nearPointNDotProduct = nearWorld[0] * mTouchPlaneNormal[0]
+				+ nearWorld[1] * mTouchPlaneNormal[1] + nearWorld[2] * mTouchPlaneNormal[2];
+		float rayNDotProduct = ray[0] * mTouchPlaneNormal[0] + ray[1] * mTouchPlaneNormal[1] + ray[2] * mTouchPlaneNormal[2];
+		
+		Log.d(TAG, String.format("NP.N %.2f Ray.N %.2f", nearPointNDotProduct, rayNDotProduct));
+		
+		float dist = Math.abs(nearPointNDotProduct - mTouchNPDotProduct);
+		if (Math.abs(rayNDotProduct) > 1e-6) {
+			float t = -(nearPointNDotProduct + dist) / rayNDotProduct;
 			if (t > 0.0f) {
-				result.x = mCameraPosition[0] + ray[0] * t;
-				result.y = mCameraPosition[1] + ray[1] * t;
+				result.x = nearWorld[0] + ray[0] * t;
+				result.y = nearWorld[1] + ray[1] * t;
 			}
+		} else {
+			Log.e(TAG, "Touch projection ray intersection error");
 		}
 		
+		Log.d(TAG, String.format("Result %.2f %.2f", result.x, result.y));
+		
 		return result;
-		*/
 	}
 
 	public float[] getCircleBorders() {
