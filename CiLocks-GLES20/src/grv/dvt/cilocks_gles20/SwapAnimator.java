@@ -6,22 +6,30 @@ public class SwapAnimator extends Animator {
 	private CircleLockCircle mInnerCircle;
 	private CircleLockCircle mOuterCircle;
 	
-	private int mSectorIndex;
+	private int mInnerSectorIndex;
+	private int mOuterSectorIndex;
 	
 	private boolean mIsSwapped;
 	
-	public SwapAnimator(long duration, CircleLockLock circleLock, CircleLockCircle innerCircle, CircleLockCircle outerCircle, int sectorIndex) {
+	public SwapAnimator(
+			long duration,
+			CircleLockLock circleLock,
+			CircleLockCircle innerCircle,
+			CircleLockCircle outerCircle,
+			int innerSectorIndex,
+			int outerSectorIndex) {
 		super(duration);
 		mCircleLock = circleLock;
 		
 		synchronized (mCircleLock) {
-			innerCircle.getSector(sectorIndex).setAngleRad(0.0f);
-			outerCircle.getSector(sectorIndex).setAngleRad(0.0f);
+			innerCircle.getSector(innerSectorIndex).setAngleRad(0.0f);
+			outerCircle.getSector(outerSectorIndex).setAngleRad(0.0f);
 		}
 		
 		mInnerCircle = innerCircle;
 		mOuterCircle = outerCircle;
-		mSectorIndex = sectorIndex;
+		mInnerSectorIndex = innerSectorIndex;
+		mOuterSectorIndex = outerSectorIndex;
 		
 		mIsSwapped = false;
 	}
@@ -30,16 +38,16 @@ public class SwapAnimator extends Animator {
 	protected void onAnimationUpdate() {
 		synchronized (mCircleLock) {
 			if (mFraction > 0.5f && !mIsSwapped) {
-				mInnerCircle.swap(mOuterCircle, mSectorIndex);
+				mInnerCircle.swap(mInnerSectorIndex, mOuterCircle, mOuterSectorIndex);
 				mIsSwapped = true;
 			}
 
 			if (mFraction > 0.5f) {
-				mInnerCircle.getSector(mSectorIndex).setAngleRad((mFraction - 1.0f) * (float)Math.PI);
-				mOuterCircle.getSector(mSectorIndex).setAngleRad((1.0f - mFraction) * (float)Math.PI);
+				mInnerCircle.getSector(mInnerSectorIndex).setAngleRad((mFraction - 1.0f) * (float)Math.PI);
+				mOuterCircle.getSector(mOuterSectorIndex).setAngleRad((1.0f - mFraction) * (float)Math.PI);
 			} else {
-				mInnerCircle.getSector(mSectorIndex).setAngleRad(mFraction * (float)Math.PI);
-				mOuterCircle.getSector(mSectorIndex).setAngleRad(-mFraction * (float)Math.PI);
+				mInnerCircle.getSector(mInnerSectorIndex).setAngleRad(mFraction * (float)Math.PI);
+				mOuterCircle.getSector(mOuterSectorIndex).setAngleRad(-mFraction * (float)Math.PI);
 			}
 		}
 	}
@@ -47,8 +55,8 @@ public class SwapAnimator extends Animator {
 	@Override
 	protected void onAnimationEnd() {
 		synchronized (mCircleLock) {
-			mInnerCircle.getSector(mSectorIndex).setAngleRad(0.0f);
-			mOuterCircle.getSector(mSectorIndex).setAngleRad(0.0f);
+			mInnerCircle.getSector(mInnerSectorIndex).setAngleRad(0.0f);
+			mOuterCircle.getSector(mOuterSectorIndex).setAngleRad(0.0f);
 			
 			mInnerCircle.setState(CircleLockCircle.State.IDLE);
 			mOuterCircle.setState(CircleLockCircle.State.IDLE);

@@ -73,29 +73,45 @@ public class CircleLockCircle {
 		return this.mSectors[index];
 	}
 	
+	/**
+	 * Determines sector index by specified angle
+	 * @param angleRad should be between 0 and 2*Pi
+	 */
+	public int getSectorIndexAtAngle(float angleRad) {
+		float stepAngleRad = (float)(2f * Math.PI / mSectorCount);
+		
+		float sectorAngleRad = angleRad - mAngleRad;
+		if (sectorAngleRad < 0.0f)
+			sectorAngleRad += 2f * Math.PI;
+		
+		return (int)Math.floor(sectorAngleRad / stepAngleRad);
+	}
+	
 	/*
 	 * Game logic
 	 */
 	
-	public void roll(int offset) {
-		CircleLockSector[] sectorBuffer = this.mSectors.clone();
-		
-		for (int i = 0; i < this.mSectorCount; i++) {
-			int index = (i - offset) % this.mSectorCount;
-			if (index < 0)
-				index += this.mSectorCount;
-
-			this.mSectors[i] = sectorBuffer[index];
-		}
+	/**
+	 * Determines if sectors could be swapped
+	 * @param sectorIndex sector index of current circle
+	 * @param swapCandidate swap circle
+	 * @param angleRad angle for swap sector index determination (should be between 0 and 2*Pi)
+	 * @return true if sectors could be swapped
+	 */
+	public boolean isSwappable(int sectorIndex, CircleLockCircle swapCandidate, float angleRad) {
+		int swapSectorIndex = swapCandidate.getSectorIndexAtAngle(angleRad);
+		return this.mSectors[sectorIndex].getSymbolIndex() == swapCandidate.mSectors[swapSectorIndex].getSymbolIndex();
 	}
 	
-	public boolean isSwappable(CircleLockCircle circle, int index) {
-		return this.mSectors[index].getSymbolIndex() == circle.mSectors[index].getSymbolIndex();
-	}
-	
-	public void swap(CircleLockCircle circle, int index) {
-		int colorIndex = this.mSectors[index].getColorIndex();
-		this.mSectors[index].setColorIndex(circle.mSectors[index].getColorIndex());
-		circle.mSectors[index].setColorIndex(colorIndex);
+	/**
+	 * Swaps sectors
+	 * @param sectorIndex sector index of current circle
+	 * @param swapCircle swap circle
+	 * @param swapSectorIndex swap circle sector index
+	 */
+	public void swap(int sectorIndex, CircleLockCircle swapCircle, int swapSectorIndex) {
+		int colorIndex = this.mSectors[sectorIndex].getColorIndex();
+		this.mSectors[sectorIndex].setColorIndex(swapCircle.mSectors[swapSectorIndex].getColorIndex());
+		swapCircle.mSectors[swapSectorIndex].setColorIndex(colorIndex);
 	}
 }

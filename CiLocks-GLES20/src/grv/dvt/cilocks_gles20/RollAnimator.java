@@ -33,8 +33,7 @@ public class RollAnimator extends Animator {
 	@Override
 	protected void onAnimationEnd() {
 		synchronized (mCircleLock) {
-			mCircle.roll(mOffset);
-			mCircle.setAngleRad(0.0f);
+			mCircle.setAngleRad(mEndAngleRad);
 			mCircle.setState(CircleLockCircle.State.IDLE);
 		}
 	}

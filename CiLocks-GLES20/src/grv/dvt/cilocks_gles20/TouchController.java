@@ -96,33 +96,31 @@ public class TouchController {
 							if (initAngleRad < 0.0f)
 								initAngleRad += 2f * Math.PI;
 							
-							float stepAngleRad = (float)(2 * Math.PI / circle.getSectorCount());
-							
-							float sectorAngleRad = initAngleRad - circle.getAngleRad();
-							if (sectorAngleRad < 0.0f)
-								sectorAngleRad += 2f * Math.PI;
-							
-							int sectorIndex = (int)Math.floor(sectorAngleRad / stepAngleRad);
+							int sectorIndex = circle.getSectorIndexAtAngle(initAngleRad);
 							
 							if (tangentialComponent > 0.0f && i < circleLock.getCircleCount() - 1) {
 								if (circleLock.getCircle(i + 1).getState() == CircleLockCircle.State.IDLE
-										&& circle.isSwappable(circleLock.getCircle(i + 1), sectorIndex)) {
+										&& circle.isSwappable(sectorIndex, circleLock.getCircle(i + 1), initAngleRad)) {
 									CircleLockCircle swapCircle = circleLock.getCircle(i + 1);
+									int swapSectorIndex = swapCircle.getSectorIndexAtAngle(initAngleRad);
 									
 									circle.setState(CircleLockCircle.State.SWAPPING);
 									swapCircle.setState(CircleLockCircle.State.SWAPPING);
 									
-									mView.getAnimationThread().addAnimator(new SwapAnimator(1000, circleLock, circle, swapCircle, sectorIndex));
+									mView.getAnimationThread().addAnimator(
+											new SwapAnimator(1000, circleLock, circle, swapCircle, sectorIndex, swapSectorIndex));
 								}
 							} else if (tangentialComponent < 0.0f && i > 0) {
 								if (circleLock.getCircle(i - 1).getState() == CircleLockCircle.State.IDLE
-										&& circle.isSwappable(circleLock.getCircle(i - 1), sectorIndex)) {
+										&& circle.isSwappable(sectorIndex, circleLock.getCircle(i - 1), initAngleRad)) {
 									CircleLockCircle swapCircle = circleLock.getCircle(i - 1);
+									int swapSectorIndex = swapCircle.getSectorIndexAtAngle(initAngleRad);
 									
 									circle.setState(CircleLockCircle.State.SWAPPING);
 									swapCircle.setState(CircleLockCircle.State.SWAPPING);
 									
-									mView.getAnimationThread().addAnimator(new SwapAnimator(1000, circleLock, swapCircle, circle, sectorIndex));
+									mView.getAnimationThread().addAnimator(
+											new SwapAnimator(1000, circleLock, swapCircle, circle, swapSectorIndex, sectorIndex));
 								}
 							}
 						}
