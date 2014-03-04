@@ -31,7 +31,7 @@ public class CLTouchController {
 				/ (float) Math.sqrt(baseVector.x * baseVector.x + baseVector.y * baseVector.y);
 	}
 	
-	public void processVectors(TouchVectorField field, CLLock circleLock) {
+	public void processVectors(CLTouchVectorField field, CLLock circleLock) {
 		for (int i = 0; i < circleLock.getCircleCount(); i++) {
 			CLCircle circle = circleLock.getCircle(i);
 			float circleWidth = mOuterRadiusSquares[i] - mInnerRadiusSquares[i];
@@ -40,7 +40,7 @@ public class CLTouchController {
 			float maxNegativeAngleRad = 0f;
 			
 			for (int j = 0; j < field.getVectorCount(); j++) {
-				TouchVector vector = field.getVector(j);
+				CLTouchVectorField.TouchVector vector = field.getVector(j);
 
 				float initDistSquare = vector.init.x * vector.init.x + vector.init.y * vector.init.y;
 				float prevDistSquare = vector.previous.x * vector.previous.x + vector.previous.y * vector.previous.y;
@@ -52,10 +52,10 @@ public class CLTouchController {
 				switch (circle.getState()) {
 				case ROLLING:
 					
-					if (isInitiatedHere && vector.action == TouchVector.Action.UNKNOWN)
-						vector.action = TouchVector.Action.ROLL;
+					if (isInitiatedHere && vector.action == CLTouchVectorField.VectorAction.UNKNOWN)
+						vector.action = CLTouchVectorField.VectorAction.ROLL;
 					
-					if (vector.action == TouchVector.Action.ROLL && isInitiatedHere) {
+					if (vector.action == CLTouchVectorField.VectorAction.ROLL && isInitiatedHere) {
 						float normalComponent = getNormalComponent(vector.previous,
 							new PointF(vector.last.x - vector.previous.x, vector.last.y - vector.previous.y));
 						float radius = (float)Math.sqrt(prevDistSquare);
@@ -70,7 +70,7 @@ public class CLTouchController {
 					
 				case IDLE:
 					
-					if (isInitiatedHere && vector.action == TouchVector.Action.UNKNOWN) {
+					if (isInitiatedHere && vector.action == CLTouchVectorField.VectorAction.UNKNOWN) {
 						PointF radialInitVector = vector.init;
 						PointF lastInitVector = new PointF(vector.last.x - vector.init.x,
 								vector.last.y - vector.init.y);
@@ -78,7 +78,7 @@ public class CLTouchController {
 						float tangentialComponent = getTangentialComponent(radialInitVector, lastInitVector);
 						
 						if (Math.abs(normalComponent) > 0.5f * circleWidth) {
-							vector.action = TouchVector.Action.ROLL;
+							vector.action = CLTouchVectorField.VectorAction.ROLL;
 							if (isPrevHere) {
 								circle.setState(CLCircle.State.ROLLING);
 								
@@ -90,7 +90,7 @@ public class CLTouchController {
 									maxNegativeAngleRad = angle;								
 							}
 						} else if (Math.abs(tangentialComponent) > 0.5f * circleWidth) {
-							vector.action = TouchVector.Action.SWAP;
+							vector.action = CLTouchVectorField.VectorAction.SWAP;
 							
 							float initAngleRad = (float)Math.atan2(vector.init.y, vector.init.x);
 							if (initAngleRad < 0.0f)
@@ -131,8 +131,8 @@ public class CLTouchController {
 					
 				case SWAPPING:
 				case ANIMATING:
-					if (isInitiatedHere && vector.action == TouchVector.Action.UNKNOWN)
-						vector.action = TouchVector.Action.DUMMY;
+					if (isInitiatedHere && vector.action == CLTouchVectorField.VectorAction.UNKNOWN)
+						vector.action = CLTouchVectorField.VectorAction.DUMMY;
 					break;
 				}
 			}

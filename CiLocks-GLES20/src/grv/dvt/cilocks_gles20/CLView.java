@@ -12,7 +12,7 @@ public class CLView extends GLSurfaceView {
 	private static final String TAG = CLView.class.getSimpleName();
 	
 	private CLRenderer mRenderer;
-	private TouchVectorField mVectorField;
+	private CLTouchVectorField mVectorField;
 	private CLLock mCircleLock;
 	private CLTouchController mTouchController;
 	private AnimationThread mAnimationThread;
@@ -45,7 +45,7 @@ public class CLView extends GLSurfaceView {
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		
 		
-		mVectorField = new TouchVectorField();
+		mVectorField = new CLTouchVectorField();
 		mTouchController = new CLTouchController(3, mRenderer.getCircleBorders(), this);
 	}
 	
