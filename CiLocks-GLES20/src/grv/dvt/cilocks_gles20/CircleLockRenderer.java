@@ -85,10 +85,6 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	 */
 	private float[] mTouchPlaneNormal = new float[] { 0.0f, 0.0f, 1.0f };
 	private float[] mTouchPlanePoint = new float[] { 0.0f, 0.0f, 0.0485f };
-	private float mTouchNPDotProduct =
-			mTouchPlaneNormal[0] * mTouchPlanePoint[0] +
-			mTouchPlaneNormal[1] * mTouchPlanePoint[1] +
-			mTouchPlaneNormal[2] * mTouchPlanePoint[2];
 	
 	/**
 	 * Infrastructure for circle collision detection
@@ -179,6 +175,8 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		final float near = 8.0f;
 		final float far = 10.0f;
 		
+		Log.d(TAG, String.format("Projection frustum. Left: %.2f right: %.2f bottom: %.2f top: %.2f near: %.2f far: %.2f",
+				left, right, bottom, top, near, far));
 		Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
 		Matrix.invertM(mProjectionInvMatrix, 0, mProjectionMatrix, 0);
 		Matrix.multiplyMM(mVPInvMatrix, 0, mViewInvMatrix, 0, mProjectionInvMatrix, 0);
@@ -248,9 +246,6 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		float[] farWorld = new float[4];
 		Matrix.multiplyMV(nearWorld, 0, mVPInvMatrix, 0, nearNdc, 0);
 		Matrix.multiplyMV(farWorld, 0, mVPInvMatrix, 0, farNdc, 0);
-
-		Log.d(TAG, String.format("Near world %.2f %.2f %.2f %.2f", nearWorld[0], nearWorld[1], nearWorld[2], nearWorld[3]));
-		Log.d(TAG, String.format("Far world %.2f %.2f %.2f %.2f", farWorld[0], farWorld[1], farWorld[2], farWorld[3]));
 		
 		// divide by W
 		nearWorld[0] /= nearWorld[3];
@@ -264,31 +259,21 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		// determine ray direction
 		float[] ray = new float[] { farWorld[0] - nearWorld[0], farWorld[1] - nearWorld[1], farWorld[2] - nearWorld[2] };
 		
-		Log.d(TAG, String.format("Near world %.2f %.2f %.2f", nearWorld[0], nearWorld[1], nearWorld[2]));
-		Log.d(TAG, String.format("Far world %.2f %.2f %.2f", farWorld[0], farWorld[1], farWorld[2]));
-		Log.d(TAG, String.format("Ray %.2f %.2f %.2f", ray[0], ray[1], ray[2]));
-		
 		// determine ray with plane intersection
 		PointF result = new PointF();
 		
-		float nearPointNDotProduct = nearWorld[0] * mTouchPlaneNormal[0]
-				+ nearWorld[1] * mTouchPlaneNormal[1] + nearWorld[2] * mTouchPlaneNormal[2];
 		float rayNDotProduct = ray[0] * mTouchPlaneNormal[0] + ray[1] * mTouchPlaneNormal[1] + ray[2] * mTouchPlaneNormal[2];
-		
-		Log.d(TAG, String.format("NP.N %.2f Ray.N %.2f", nearPointNDotProduct, rayNDotProduct));
-		
-		float dist = Math.abs(nearPointNDotProduct - mTouchNPDotProduct);
 		if (Math.abs(rayNDotProduct) > 1e-6) {
-			float t = -(nearPointNDotProduct + dist) / rayNDotProduct;
-			if (t > 0.0f) {
-				result.x = nearWorld[0] + ray[0] * t;
-				result.y = nearWorld[1] + ray[1] * t;
+			float d = ((mTouchPlanePoint[0] - nearWorld[0]) * mTouchPlaneNormal[0]
+							+ (mTouchPlanePoint[1] - nearWorld[1]) * mTouchPlaneNormal[1]
+							+ (mTouchPlanePoint[2] - nearWorld[2]) * mTouchPlaneNormal[2]) / rayNDotProduct;
+			if (d > 0.0f) {
+				result.x = nearWorld[0] + ray[0] * d;
+				result.y = nearWorld[1] + ray[1] * d;
 			}
 		} else {
 			Log.e(TAG, "Touch projection ray intersection error");
 		}
-		
-		Log.d(TAG, String.format("Result %.2f %.2f", result.x, result.y));
 		
 		return result;
 	}
