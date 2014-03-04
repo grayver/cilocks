@@ -7,17 +7,17 @@ import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
 import android.view.MotionEvent;
 
-public class CircleLockView extends GLSurfaceView {
+public class CLView extends GLSurfaceView {
 	
-	private static final String TAG = CircleLockView.class.getSimpleName();
+	private static final String TAG = CLView.class.getSimpleName();
 	
-	private CircleLockRenderer mRenderer;
+	private CLRenderer mRenderer;
 	private TouchVectorField mVectorField;
-	private CircleLockLock mCircleLock;
-	private TouchController mTouchController;
+	private CLLock mCircleLock;
+	private CLTouchController mTouchController;
 	private AnimationThread mAnimationThread;
 	
-	public CircleLockView(Context context) {
+	public CLView(Context context) {
 		super(context);
 		
 		// Request an OpenGL ES 2.0 compatible context.
@@ -35,10 +35,10 @@ public class CircleLockView extends GLSurfaceView {
 				{ 0, 1, 2, 1, 1, 0, 1, 2 },
 				{ 2, 0, 1, 2, 1, 1, 0, 1 },
 				{ 0, 1, 2, 1, 1, 0, 1, 2 } };
-		mCircleLock = new CircleLockLock(3, 8, colorIndexes, symbolIndexes);
+		mCircleLock = new CLLock(3, 8, colorIndexes, symbolIndexes);
 		
 		// Set renderer
-		mRenderer = new CircleLockRenderer(context, mCircleLock);
+		mRenderer = new CLRenderer(context, mCircleLock);
 		setRenderer(mRenderer);
 		
 		// Render the view only when there is a change in the drawing data
@@ -46,7 +46,7 @@ public class CircleLockView extends GLSurfaceView {
 		
 		
 		mVectorField = new TouchVectorField();
-		mTouchController = new TouchController(3, mRenderer.getCircleBorders(), this);
+		mTouchController = new CLTouchController(3, mRenderer.getCircleBorders(), this);
 	}
 	
 	@Override

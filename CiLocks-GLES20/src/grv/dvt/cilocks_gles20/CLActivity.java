@@ -9,11 +9,11 @@ import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
-public class CircleLockActivity extends Activity {
+public class CLActivity extends Activity {
 
-	private static final String TAG = CircleLockActivity.class.getSimpleName();
+	private static final String TAG = CLActivity.class.getSimpleName();
 
-	private CircleLockView mView;
+	private CLView mView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +26,7 @@ public class CircleLockActivity extends Activity {
 		final boolean supportsEs2 = configurationInfo.reqGlEsVersion >= 0x20000;
 
 		if (supportsEs2) {
-			mView = new CircleLockView(this);;
+			mView = new CLView(this);;
 		} else {
 			// This is where you could create an OpenGL ES 1.x compatible
 			// renderer if you wanted to support both ES 1 and ES 2.

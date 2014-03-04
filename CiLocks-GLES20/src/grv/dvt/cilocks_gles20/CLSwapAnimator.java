@@ -1,21 +1,21 @@
 package grv.dvt.cilocks_gles20;
 
-public class SwapAnimator extends Animator {
+public class CLSwapAnimator extends Animator {
 
-	private CircleLockLock mCircleLock;
-	private CircleLockCircle mInnerCircle;
-	private CircleLockCircle mOuterCircle;
+	private CLLock mCircleLock;
+	private CLCircle mInnerCircle;
+	private CLCircle mOuterCircle;
 	
 	private int mInnerSectorIndex;
 	private int mOuterSectorIndex;
 	
 	private boolean mIsSwapped;
 	
-	public SwapAnimator(
+	public CLSwapAnimator(
 			long duration,
-			CircleLockLock circleLock,
-			CircleLockCircle innerCircle,
-			CircleLockCircle outerCircle,
+			CLLock circleLock,
+			CLCircle innerCircle,
+			CLCircle outerCircle,
 			int innerSectorIndex,
 			int outerSectorIndex) {
 		super(duration);
@@ -58,8 +58,8 @@ public class SwapAnimator extends Animator {
 			mInnerCircle.getSector(mInnerSectorIndex).setAngleRad(0.0f);
 			mOuterCircle.getSector(mOuterSectorIndex).setAngleRad(0.0f);
 			
-			mInnerCircle.setState(CircleLockCircle.State.IDLE);
-			mOuterCircle.setState(CircleLockCircle.State.IDLE);
+			mInnerCircle.setState(CLCircle.State.IDLE);
+			mOuterCircle.setState(CLCircle.State.IDLE);
 		}
 	}
 }

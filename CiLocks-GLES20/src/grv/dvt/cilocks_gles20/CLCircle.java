@@ -1,9 +1,9 @@
 package grv.dvt.cilocks_gles20;
 
 /*
- * Circle lock circle
+ * CircleLock circle
  */
-public class CircleLockCircle {
+public class CLCircle {
 
 	public enum State {
 		IDLE, ROLLING, SWAPPING, ANIMATING
@@ -11,7 +11,7 @@ public class CircleLockCircle {
 	
 	
 	/** Circle state */
-	private CircleLockCircle.State mState;
+	private CLCircle.State mState;
 	
 	/** Circle rotation angle in radians */
 	private float mAngleRad;
@@ -23,27 +23,27 @@ public class CircleLockCircle {
 	private int mSectorCount;
 	
 	/** Sectors */
-	private CircleLockSector[] mSectors;
+	private CLSector[] mSectors;
 	
 	
 	/** Constructor */
-	public CircleLockCircle(int sectorCount, int[] colorIndexes, int[] symbolIndexes) {
-		this.mState = CircleLockCircle.State.IDLE;
+	public CLCircle(int sectorCount, int[] colorIndexes, int[] symbolIndexes) {
+		this.mState = CLCircle.State.IDLE;
 		
 		this.mAngleRad = 0.0f;
 		this.mAngleDeg = 0.0f;
 		
 		this.mSectorCount = sectorCount;
-		this.mSectors = new CircleLockSector[sectorCount];
+		this.mSectors = new CLSector[sectorCount];
 		for (int i = 0; i < sectorCount; i++)
-			this.mSectors[i] = new CircleLockSector(colorIndexes[i], symbolIndexes[i]);
+			this.mSectors[i] = new CLSector(colorIndexes[i], symbolIndexes[i]);
 	}
 	
-	public CircleLockCircle.State getState() {
+	public CLCircle.State getState() {
 		return this.mState;
 	}
 	
-	public void setState(CircleLockCircle.State value) {
+	public void setState(CLCircle.State value) {
 		this.mState = value;
 	}
 	
@@ -69,7 +69,7 @@ public class CircleLockCircle {
 		return this.mSectorCount;
 	}
 	
-	public CircleLockSector getSector(int index) {
+	public CLSector getSector(int index) {
 		return this.mSectors[index];
 	}
 	
@@ -98,7 +98,7 @@ public class CircleLockCircle {
 	 * @param angleRad angle for swap sector index determination (should be between 0 and 2*Pi)
 	 * @return true if sectors could be swapped
 	 */
-	public boolean isSwappable(int sectorIndex, CircleLockCircle swapCandidate, float angleRad) {
+	public boolean isSwappable(int sectorIndex, CLCircle swapCandidate, float angleRad) {
 		int swapSectorIndex = swapCandidate.getSectorIndexAtAngle(angleRad);
 		return this.mSectors[sectorIndex].getSymbolIndex() == swapCandidate.mSectors[swapSectorIndex].getSymbolIndex();
 	}
@@ -109,7 +109,7 @@ public class CircleLockCircle {
 	 * @param swapCircle swap circle
 	 * @param swapSectorIndex swap circle sector index
 	 */
-	public void swap(int sectorIndex, CircleLockCircle swapCircle, int swapSectorIndex) {
+	public void swap(int sectorIndex, CLCircle swapCircle, int swapSectorIndex) {
 		int colorIndex = this.mSectors[sectorIndex].getColorIndex();
 		this.mSectors[sectorIndex].setColorIndex(swapCircle.mSectors[swapSectorIndex].getColorIndex());
 		swapCircle.mSectors[swapSectorIndex].setColorIndex(colorIndex);

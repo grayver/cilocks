@@ -1,15 +1,15 @@
 package grv.dvt.cilocks_gles20;
 
-public class RollAnimator extends Animator {
+public class CLRollAnimator extends Animator {
 
-	private CircleLockLock mCircleLock;
-	private CircleLockCircle mCircle;
+	private CLLock mCircleLock;
+	private CLCircle mCircle;
 	private int mOffset;
 	
 	private float mStartAngleRad;
 	private float mEndAngleRad;
 	
-	public RollAnimator(long duration, CircleLockLock circleLock, CircleLockCircle circle) {
+	public CLRollAnimator(long duration, CLLock circleLock, CLCircle circle) {
 		super(duration);
 		mCircleLock = circleLock;
 		mCircle = circle;
@@ -34,7 +34,7 @@ public class RollAnimator extends Animator {
 	protected void onAnimationEnd() {
 		synchronized (mCircleLock) {
 			mCircle.setAngleRad(mEndAngleRad);
-			mCircle.setState(CircleLockCircle.State.IDLE);
+			mCircle.setState(CLCircle.State.IDLE);
 		}
 	}
 }

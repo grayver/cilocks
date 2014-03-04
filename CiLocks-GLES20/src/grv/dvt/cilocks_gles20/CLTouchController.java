@@ -2,14 +2,14 @@ package grv.dvt.cilocks_gles20;
 
 import android.graphics.PointF;
 
-public class TouchController {
+public class CLTouchController {
 	
 	private float[] mInnerRadiusSquares;
 	private float[] mOuterRadiusSquares;
 	
-	private CircleLockView mView;
+	private CLView mView;
 	
-	public TouchController(int circleCount, float[] circleBorders, CircleLockView view) {
+	public CLTouchController(int circleCount, float[] circleBorders, CLView view) {
 		mInnerRadiusSquares = new float[circleCount];
 		mOuterRadiusSquares = new float[circleCount];
 		
@@ -31,9 +31,9 @@ public class TouchController {
 				/ (float) Math.sqrt(baseVector.x * baseVector.x + baseVector.y * baseVector.y);
 	}
 	
-	public void processVectors(TouchVectorField field, CircleLockLock circleLock) {
+	public void processVectors(TouchVectorField field, CLLock circleLock) {
 		for (int i = 0; i < circleLock.getCircleCount(); i++) {
-			CircleLockCircle circle = circleLock.getCircle(i);
+			CLCircle circle = circleLock.getCircle(i);
 			float circleWidth = mOuterRadiusSquares[i] - mInnerRadiusSquares[i];
 			int touchCount = 0;
 			float maxPositiveAngleRad = 0f;
@@ -80,7 +80,7 @@ public class TouchController {
 						if (Math.abs(normalComponent) > 0.5f * circleWidth) {
 							vector.action = TouchVector.Action.ROLL;
 							if (isPrevHere) {
-								circle.setState(CircleLockCircle.State.ROLLING);
+								circle.setState(CLCircle.State.ROLLING);
 								
 								float radius = (float)Math.sqrt(initDistSquare);
 								float angle = (float)Math.atan2(normalComponent, radius);
@@ -99,28 +99,28 @@ public class TouchController {
 							int sectorIndex = circle.getSectorIndexAtAngle(initAngleRad);
 							
 							if (tangentialComponent > 0.0f && i < circleLock.getCircleCount() - 1) {
-								if (circleLock.getCircle(i + 1).getState() == CircleLockCircle.State.IDLE
+								if (circleLock.getCircle(i + 1).getState() == CLCircle.State.IDLE
 										&& circle.isSwappable(sectorIndex, circleLock.getCircle(i + 1), initAngleRad)) {
-									CircleLockCircle swapCircle = circleLock.getCircle(i + 1);
+									CLCircle swapCircle = circleLock.getCircle(i + 1);
 									int swapSectorIndex = swapCircle.getSectorIndexAtAngle(initAngleRad);
 									
-									circle.setState(CircleLockCircle.State.SWAPPING);
-									swapCircle.setState(CircleLockCircle.State.SWAPPING);
+									circle.setState(CLCircle.State.SWAPPING);
+									swapCircle.setState(CLCircle.State.SWAPPING);
 									
 									mView.getAnimationThread().addAnimator(
-											new SwapAnimator(1000, circleLock, circle, swapCircle, sectorIndex, swapSectorIndex));
+											new CLSwapAnimator(1000, circleLock, circle, swapCircle, sectorIndex, swapSectorIndex));
 								}
 							} else if (tangentialComponent < 0.0f && i > 0) {
-								if (circleLock.getCircle(i - 1).getState() == CircleLockCircle.State.IDLE
+								if (circleLock.getCircle(i - 1).getState() == CLCircle.State.IDLE
 										&& circle.isSwappable(sectorIndex, circleLock.getCircle(i - 1), initAngleRad)) {
-									CircleLockCircle swapCircle = circleLock.getCircle(i - 1);
+									CLCircle swapCircle = circleLock.getCircle(i - 1);
 									int swapSectorIndex = swapCircle.getSectorIndexAtAngle(initAngleRad);
 									
-									circle.setState(CircleLockCircle.State.SWAPPING);
-									swapCircle.setState(CircleLockCircle.State.SWAPPING);
+									circle.setState(CLCircle.State.SWAPPING);
+									swapCircle.setState(CLCircle.State.SWAPPING);
 									
 									mView.getAnimationThread().addAnimator(
-											new SwapAnimator(1000, circleLock, swapCircle, circle, swapSectorIndex, sectorIndex));
+											new CLSwapAnimator(1000, circleLock, swapCircle, circle, swapSectorIndex, sectorIndex));
 								}
 							}
 						}
@@ -137,7 +137,7 @@ public class TouchController {
 				}
 			}
 			
-			if (circle.getState() == CircleLockCircle.State.ROLLING) {
+			if (circle.getState() == CLCircle.State.ROLLING) {
 				if (maxNegativeAngleRad < 0.0f || maxPositiveAngleRad > 0.0f) {
 					float resultAngleRad = maxPositiveAngleRad + maxNegativeAngleRad;
 					synchronized (circleLock) {
@@ -146,8 +146,8 @@ public class TouchController {
 					}
 				} else if (touchCount == 0)
 					synchronized (circleLock) {
-						circle.setState(CircleLockCircle.State.ANIMATING);
-						mView.getAnimationThread().addAnimator(new RollAnimator(200, circleLock, circle));
+						circle.setState(CLCircle.State.ANIMATING);
+						mView.getAnimationThread().addAnimator(new CLRollAnimator(200, circleLock, circle));
 					}
 			}
 		}

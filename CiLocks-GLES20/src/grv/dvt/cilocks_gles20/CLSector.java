@@ -1,9 +1,9 @@
 package grv.dvt.cilocks_gles20;
 
 /*
- * Circle lock sector
+ * CircleLock sector
  */
-public class CircleLockSector {
+public class CLSector {
 	
 	public enum State {
 		IDLE, SWAPPING
@@ -11,7 +11,7 @@ public class CircleLockSector {
 	
 	
 	/** Sector state */
-	private CircleLockSector.State mState;
+	private CLSector.State mState;
 	
 	/** Sector rotation angle in radians (in terms of radial axis) */
 	private float mAngleRad;
@@ -27,21 +27,21 @@ public class CircleLockSector {
 	
 	
 	/** Constructor */
-	public CircleLockSector(int colorIndex, int symbolIndex) {
+	public CLSector(int colorIndex, int symbolIndex) {
 		this.mColorIndex = colorIndex;
 		this.mSymbolIndex = symbolIndex;
 		
 		this.mAngleRad = 0.0f;
 		this.mAngleDeg = 0.0f;
 		
-		this.mState = CircleLockSector.State.IDLE;
+		this.mState = CLSector.State.IDLE;
 	}
 	
-	public CircleLockSector.State getState() {
+	public CLSector.State getState() {
 		return this.mState;
 	}
 	
-	public void setState(CircleLockSector.State value) {
+	public void setState(CLSector.State value) {
 		this.mState = value;
 	}
 	

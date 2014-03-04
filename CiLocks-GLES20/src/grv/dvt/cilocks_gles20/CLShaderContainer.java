@@ -8,9 +8,9 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.util.Log;
 
-public class ShaderContainer {
+public class CLShaderContainer {
 	
-	private static final String TAG = ShaderContainer.class.getSimpleName();
+	private static final String TAG = CLShaderContainer.class.getSimpleName();
 
 	// Activity context
 	private Context mContext;
@@ -35,7 +35,7 @@ public class ShaderContainer {
 
 	private boolean mIsLoaded;
 
-	public ShaderContainer(Context context) {
+	public CLShaderContainer(Context context) {
 		mContext = context;
 		mIsLoaded = false;
 	}

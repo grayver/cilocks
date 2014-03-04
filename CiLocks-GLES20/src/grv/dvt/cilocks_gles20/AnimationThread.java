@@ -2,6 +2,7 @@ package grv.dvt.cilocks_gles20;
 
 import java.util.ArrayList;
 
+import android.opengl.GLSurfaceView;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -16,9 +17,9 @@ public class AnimationThread extends Thread {
 	
 	private ArrayList<Animator> mAnimators;
 	
-	private CircleLockView mView;
+	private GLSurfaceView mView;
 	
-	public AnimationThread(CircleLockView view) {
+	public AnimationThread(GLSurfaceView view) {
 		super();
 		mAnimators = new ArrayList<Animator>();
 		mView = view;

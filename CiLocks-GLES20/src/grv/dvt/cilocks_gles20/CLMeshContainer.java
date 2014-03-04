@@ -9,7 +9,7 @@ import java.nio.FloatBuffer;
 import android.content.Context;
 import android.opengl.GLES20;
 
-public class MeshContainer {
+public class CLMeshContainer {
 	// Circle count in mesh geometry
 	private int mCircleCount;
 	
@@ -80,7 +80,7 @@ public class MeshContainer {
 	
 	private boolean mIsLoaded;
 	
-	public MeshContainer(Context context) {
+	public CLMeshContainer(Context context) {
 		mContext = context;
 		mIsLoaded = false;
 	}

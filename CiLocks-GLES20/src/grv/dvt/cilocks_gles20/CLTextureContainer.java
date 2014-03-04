@@ -10,7 +10,7 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
-public class TextureContainer {
+public class CLTextureContainer {
 	// Color texture count
 	private final int mColorCount = 4;
 	
@@ -29,7 +29,7 @@ public class TextureContainer {
 	
 	private boolean mIsLoaded;
 	
-	public TextureContainer(Context context) {
+	public CLTextureContainer(Context context) {
 		mContext = context;
 		mColorTextureIds = new int[mColorCount];
 		mSymbolTextureIds = new int[mSymbolCount];

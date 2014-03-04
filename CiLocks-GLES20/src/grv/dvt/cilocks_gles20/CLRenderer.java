@@ -12,18 +12,18 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
 
-public class CircleLockRenderer implements GLSurfaceView.Renderer {
+public class CLRenderer implements GLSurfaceView.Renderer {
 
-	private static final String TAG = CircleLockRenderer.class.getSimpleName();
+	private static final String TAG = CLRenderer.class.getSimpleName();
 
 	private float mScreenWidth;
 	private float mScreenHeight;
 	
-	private MeshContainer mMeshContainer;
-	private TextureContainer mTextureContainer;
-	private ShaderContainer mShaderContainer;
+	private CLMeshContainer mMeshContainer;
+	private CLTextureContainer mTextureContainer;
+	private CLShaderContainer mShaderContainer;
 
-	private CircleLockLock mCircleLock;
+	private CLLock mCircleLock;
 
 	private int mLightHandle;
 	private int mMVPMatrixHandle;
@@ -92,10 +92,10 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 	private float[] mCircleBorders = new float[] { 0.338f, 0.558f, 0.777f, 0.996f };
 	
 	
-	public CircleLockRenderer(Context context, CircleLockLock circleLock) {
-		mMeshContainer = new MeshContainer(context);
-		mTextureContainer = new TextureContainer(context);
-		mShaderContainer = new ShaderContainer(context);
+	public CLRenderer(Context context, CLLock circleLock) {
+		mMeshContainer = new CLMeshContainer(context);
+		mTextureContainer = new CLTextureContainer(context);
+		mShaderContainer = new CLShaderContainer(context);
 		
 		mCircleLock = circleLock;
 		
@@ -112,13 +112,13 @@ public class CircleLockRenderer implements GLSurfaceView.Renderer {
 		
 		synchronized (mCircleLock) {
 			for (int i = 0; i < mCircleLock.getCircleCount(); i++) {
-				CircleLockCircle circle = mCircleLock.getCircle(i);
+				CLCircle circle = mCircleLock.getCircle(i);
 				
 				mMatrixStack.push(mModelMatrix, 0);
 				Matrix.rotateM(mModelMatrix, 0, circle.getAngleDeg(), 0.0f, 0.0f, 1.0f);
 				
 				for (int j = 0; j < mCircleLock.getCircle(i).getSectorCount(); j++) {
-					CircleLockSector sector = circle.getSector(j);
+					CLSector sector = circle.getSector(j);
 					
 					mMatrixStack.push(mModelMatrix, 0);
 					float sectorAngleRad = 2f * (float)Math.PI * (j + 0.5f) / circle.getSectorCount();
