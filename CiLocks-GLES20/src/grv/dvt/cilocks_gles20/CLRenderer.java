@@ -107,6 +107,9 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 		// Redraw background color
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 		
+		// Specify common uniform
+		GLES20.glUniform3fv(mLightHandle, 1, mVLightPosition, 0);
+		
 		// Init model matrix
 		Matrix.setIdentityM(mModelMatrix, 0);
 		
@@ -132,18 +135,51 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 					// This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix.
 					Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVMatrix, 0);
 					
-					GLES20.glUniform3fv(mLightHandle, 1, mVLightPosition, 0);
+					// Specify matrix uniforms
 					GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVMatrix, 0);
 					GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 					
+					// Specify texture uniforms
 					mTextureContainer.bindTextures(sector.getColorIndex(), sector.getSymbolIndex());
 					GLES20.glUniform1i(mColorMapHandle, 0);
 					GLES20.glUniform1i(mNormalMapHandle, 1);
 					
-					mMeshContainer.drawMesh(i, j, mPositionHandle, mUVHandle, mNormalHandle, mTangentHandle, mBitangentHandle);
+					mMeshContainer.drawCircleSector(i, j, mPositionHandle, mUVHandle, mNormalHandle, mTangentHandle, mBitangentHandle);
 					
 					mMatrixStack.pop(mModelMatrix, 0);
 				}
+				
+				mMatrixStack.pop(mModelMatrix, 0);
+			}
+			
+			CLKeyCircle keyCircle = mCircleLock.getKeyCircle();
+			for (int i = 0; i < keyCircle.getSectorCount(); i++) {
+				CLKeySector keySector = keyCircle.getSector(i);
+				
+				mMatrixStack.push(mModelMatrix, 0);
+				float sectorAngleRad = 2f * (float)Math.PI * (i + 0.5f) / keyCircle.getSectorCount();
+				//float sectorDistance = keySector.getDistance();
+				float sectorDistance = 0.16f;
+				if (sectorDistance > 1e-6f)
+					Matrix.translateM(mModelMatrix, 0, sectorDistance * (float)Math.cos(sectorAngleRad),
+							sectorDistance * (float)Math.sin(sectorAngleRad), 0.0f);
+				
+				// This multiplies the view matrix by the model matrix, and stores the result in the MV matrix.
+				Matrix.multiplyMM(mMVMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+				
+				// This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix.
+				Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVMatrix, 0);
+				
+				// Specify matrix uniforms
+				GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVMatrix, 0);
+				GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+				
+				// Specify texture uniforms
+				mTextureContainer.bindTextures(keySector.getColorIndex(), 0);
+				GLES20.glUniform1i(mColorMapHandle, 0);
+				GLES20.glUniform1i(mNormalMapHandle, 1);
+				
+				mMeshContainer.drawKeySector(i, mPositionHandle, mUVHandle, mNormalHandle, mTangentHandle, mBitangentHandle);
 				
 				mMatrixStack.pop(mModelMatrix, 0);
 			}
@@ -172,8 +208,10 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 		final float bottom = Math.min(-backRatio, -1.0f);
 		final float top = Math.max(backRatio, 1.0f);
 		
-		final float near = 8.0f;
-		final float far = 10.0f;
+		float cameraDist = (float)Math.sqrt(mCameraPosition[0] * mCameraPosition[0] +
+				mCameraPosition[1] * mCameraPosition[1] + mCameraPosition[2] * mCameraPosition[2]);
+		final float near = cameraDist - 1.0f;
+		final float far = cameraDist + 1.0f;
 		
 		Log.d(TAG, String.format("Projection frustum. Left: %.2f right: %.2f bottom: %.2f top: %.2f near: %.2f far: %.2f",
 				left, right, bottom, top, near, far));
