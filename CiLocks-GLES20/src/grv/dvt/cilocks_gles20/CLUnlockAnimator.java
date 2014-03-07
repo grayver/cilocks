@@ -21,7 +21,8 @@ public class CLUnlockAnimator extends Animator {
 	
 	@Override
 	protected void onAnimationUpdate() {
-		float distance = mFraction * mTargetDistance;
+		// use parabolic curve
+		float distance = mFraction * mFraction * mTargetDistance;
 		
 		synchronized (mCircleLock) {
 			CLKeyCircle keyCircle = mCircleLock.getKeyCircle();
