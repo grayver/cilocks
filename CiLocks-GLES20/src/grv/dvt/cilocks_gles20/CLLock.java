@@ -11,15 +11,26 @@ public class CLLock {
 	/** Circles */
 	private CLCircle[] mCircles;
 	
+	/** Key circle */
+	private CLKeyCircle mKeyCircle;
+	
 	
 	/** Constructor */
-	public CLLock(int circleCount, int sectorCount,
-			int[][] colorIndexes, int[][] symbolIndexes) {
+	public CLLock(
+			int circleCount,
+			int sectorCount,
+			int[][] colorIndexes,
+			int[][] symbolIndexes,
+			int keySectorCount,
+			int[] keyColorIndexes) {
+		
 		this.mCircleCount = circleCount;
 		
 		this.mCircles = new CLCircle[circleCount];
 		for (int i = 0; i < circleCount; i++)
 			this.mCircles[i] = new CLCircle(sectorCount, colorIndexes[i], symbolIndexes[i]);
+		
+		this.mKeyCircle = new CLKeyCircle(keySectorCount, keyColorIndexes);
 	}
 	
 	public int getCircleCount() {
@@ -28,5 +39,9 @@ public class CLLock {
 	
 	public CLCircle getCircle(int index) {
 		return this.mCircles[index];
+	}
+	
+	public CLKeyCircle getKeyCircle() {
+		return this.mKeyCircle;
 	}
 }

@@ -15,12 +15,12 @@ public class Aggregator {
 	
 	public static void main(String[] args) {
 		try {
-			DataOutputStream dos = new DataOutputStream(new FileOutputStream(String.format("out/mesh_%dx%d.bin", mCircleCount, mSectorCount)));
+			DataOutputStream dos = new DataOutputStream(new FileOutputStream(String.format("out/mesh_%dx%dx%d.bin", mCircleCount, mSectorCount, mKeyCount)));
 			dos.writeInt(mCircleCount);
 			dos.writeInt(mSectorCount);
+			dos.writeInt(mKeyCount);
 			
 			for (int i = 0; i < mCircleCount; i++) {
-				
 				for (int j = 0; j < mSectorCount; j++) {
 					FileInputStream is = new FileInputStream(String.format("out/mesh_%s%d.bin", mCirclePrefixes[i], j + 1));
 					byte[] buffer = new byte[is.available()];
@@ -29,16 +29,6 @@ public class Aggregator {
 					is.close();
 				}
 			}
-			
-			dos.flush();
-			dos.close();
-		} catch (IOException e) {
-			System.err.println(e.getMessage());
-		}
-
-		try {
-			DataOutputStream dos = new DataOutputStream(new FileOutputStream(String.format("out/mesh_key.bin", mKeyCount)));
-			dos.writeInt(mKeyCount);
 			
 			for (int i = 0; i < mKeyCount; i++) {
 				FileInputStream is = new FileInputStream(String.format("out/mesh_%s%d.bin", mKeyPrefix, i + 1));
