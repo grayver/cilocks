@@ -3,22 +3,23 @@ package grv.dvt.cilocks_gles20;
 public class CLRollAnimator extends Animator {
 
 	private CLLock mCircleLock;
+	private CLGame mGame;
 	private CLCircle mCircle;
-	private int mOffset;
 	
 	private float mStartAngleRad;
 	private float mEndAngleRad;
 	
-	public CLRollAnimator(long duration, CLLock circleLock, CLCircle circle) {
+	public CLRollAnimator(long duration, CLLock circleLock, CLGame game, CLCircle circle) {
 		super(duration);
 		mCircleLock = circleLock;
+		mGame = game;
 		mCircle = circle;
 		
 		float stepAngleRad = (float)(2f * Math.PI / circle.getSectorCount());
-		mOffset = Math.round(circle.getAngleRad() / stepAngleRad);
+		int offset = Math.round(circle.getAngleRad() / stepAngleRad);
 		
 		mStartAngleRad = circle.getAngleRad();
-		mEndAngleRad = mOffset * stepAngleRad;
+		mEndAngleRad = offset * stepAngleRad;
 	}
 	
 	@Override
@@ -35,6 +36,7 @@ public class CLRollAnimator extends Animator {
 		synchronized (mCircleLock) {
 			mCircle.setAngleRad(mEndAngleRad);
 			mCircle.setState(CLCircle.State.IDLE);
+			mGame.updateState();
 		}
 	}
 }

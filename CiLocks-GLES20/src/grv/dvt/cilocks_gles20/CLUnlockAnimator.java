@@ -3,14 +3,12 @@ package grv.dvt.cilocks_gles20;
 public class CLUnlockAnimator extends Animator {
 
 	private CLLock mCircleLock;
+	private CLGame mGame;
 	
-	private float mTargetDistance;
-	
-	public CLUnlockAnimator(long duration, CLLock circleLock, float targetDistance) {
+	public CLUnlockAnimator(long duration, CLLock circleLock, CLGame game) {
 		super(duration);
 		mCircleLock = circleLock;
-		
-		mTargetDistance = targetDistance;
+		mGame = game;
 		
 		synchronized (mCircleLock) {
 			CLKeyCircle keyCircle = mCircleLock.getKeyCircle();
@@ -22,7 +20,7 @@ public class CLUnlockAnimator extends Animator {
 	@Override
 	protected void onAnimationUpdate() {
 		// use parabolic curve
-		float distance = mFraction * mFraction * mTargetDistance;
+		float distance = mFraction * mFraction;
 		
 		synchronized (mCircleLock) {
 			CLKeyCircle keyCircle = mCircleLock.getKeyCircle();
@@ -36,7 +34,8 @@ public class CLUnlockAnimator extends Animator {
 		synchronized (mCircleLock) {
 			CLKeyCircle keyCircle = mCircleLock.getKeyCircle();
 			for (int i = 0; i < keyCircle.getSectorCount(); i++)
-				keyCircle.getSector(i).setDistance(mTargetDistance);
+				keyCircle.getSector(i).setDistance(1.0f);
+			mGame.setState(CLGame.State.OVER);
 		}
 	}
 

@@ -84,7 +84,7 @@ public class CLCircle {
 		if (sectorAngleRad < 0.0f)
 			sectorAngleRad += 2f * Math.PI;
 		
-		return Math.round(sectorAngleRad / stepAngleRad);
+		return (int)Math.floor(sectorAngleRad / stepAngleRad);
 	}
 	
 	/*

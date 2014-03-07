@@ -158,8 +158,7 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 				
 				mMatrixStack.push(mModelMatrix, 0);
 				float sectorAngleRad = 2f * (float)Math.PI * (i + 0.5f) / keyCircle.getSectorCount();
-				//float sectorDistance = keySector.getDistance();
-				float sectorDistance = 0.16f;
+				float sectorDistance = 0.16f * keySector.getDistance();
 				if (sectorDistance > 1e-6f)
 					Matrix.translateM(mModelMatrix, 0, sectorDistance * (float)Math.cos(sectorAngleRad),
 							sectorDistance * (float)Math.sin(sectorAngleRad), 0.0f);

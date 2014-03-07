@@ -15,6 +15,7 @@ public class CLView extends GLSurfaceView {
 	private CLTouchVectorField mVectorField;
 	private CLLock mCircleLock;
 	private CLTouchController mTouchController;
+	private CLGame mGame;
 	private AnimationThread mAnimationThread;
 	
 	public CLView(Context context) {
@@ -46,6 +47,7 @@ public class CLView extends GLSurfaceView {
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		
 		
+		mGame = new CLGame(mCircleLock, this);
 		mVectorField = new CLTouchVectorField();
 		mTouchController = new CLTouchController(3, mRenderer.getCircleBorders(), this);
 	}
@@ -91,17 +93,17 @@ public class CLView extends GLSurfaceView {
 		case MotionEvent.ACTION_UP:
 		case MotionEvent.ACTION_POINTER_UP:
 			mVectorField.releaseVector(MotionEventCompat.getPointerId(event, index));
-			mTouchController.processVectors(mVectorField, mCircleLock);
+			mTouchController.processVectors(mVectorField, mCircleLock, mGame);
 			break;
 		case MotionEvent.ACTION_MOVE:
 			for (int i = 0; i < MotionEventCompat.getPointerCount(event); i++)
 				mVectorField.moveVector(MotionEventCompat.getPointerId(event, i),
 						mRenderer.getPointProjection(new PointF(MotionEventCompat.getX(event, i), MotionEventCompat.getY(event, i))));
-			mTouchController.processVectors(mVectorField, mCircleLock);
+			mTouchController.processVectors(mVectorField, mCircleLock, mGame);
 			break;
 		case MotionEvent.ACTION_CANCEL:
 			this.mVectorField.clearField();
-			mTouchController.processVectors(mVectorField, mCircleLock);
+			mTouchController.processVectors(mVectorField, mCircleLock, mGame);
 			break;
 		}
 

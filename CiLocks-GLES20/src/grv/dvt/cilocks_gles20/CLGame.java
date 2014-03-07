@@ -16,18 +16,35 @@ public class CLGame {
 	/** Circle lock */
 	private CLLock mCircleLock;
 	
+	private CLView mView;
+	
 	/** Constructor */
-	public CLGame(CLLock circleLock) {
+	public CLGame(CLLock circleLock, CLView view) {
 		mState = CLGame.State.ACTIVE;
 		
 		mCircleLock = circleLock;
+		mView = view;
 	}
 	
 	public CLGame.State getState() {
 		return mState;
 	}
 	
-	public boolean detectUnlock() {
+	public void setState(CLGame.State value) {
+		mState = value;
+	}
+	
+	public void updateState() {
+		if (mState == CLGame.State.ACTIVE) {
+			if (detectUnlock()) {
+				mState = CLGame.State.ANIMATING;
+				mView.getAnimationThread().addAnimator(new CLUnlockAnimator(200, mCircleLock, this));
+			}
+		}
+	}
+	
+	
+	private boolean detectUnlock() {
 		int keyCount = mCircleLock.getKeyCircle().getSectorCount();
 		int[] keyColorIndexes = new int[keyCount];
 		for (int i = 0; i < keyCount; i++)
@@ -38,10 +55,18 @@ public class CLGame {
 			if (circle.getState() != CLCircle.State.IDLE)
 				return false;
 			
+			float stepAngleRad = (float)(2f * Math.PI / circle.getSectorCount());
+			int offset = Math.round(circle.getAngleRad() / stepAngleRad);
 			int sectorToKeyFactor = circle.getSectorCount() / keyCount;
-			for (int j = 0; j < circle.getSectorCount(); j++)
-				if (circle.getSector(j).getColorIndex() != keyColorIndexes[j / sectorToKeyFactor])
+			
+			for (int j = 0; j < circle.getSectorCount(); j++) {
+				int sectorIndex = (j - offset) % circle.getSectorCount();
+				if (sectorIndex < 0)
+					sectorIndex += circle.getSectorCount();
+				
+				if (circle.getSector(sectorIndex).getColorIndex() != keyColorIndexes[j / sectorToKeyFactor])
 					return false;
+			}
 		}
 		
 		return true;

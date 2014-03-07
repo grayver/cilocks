@@ -2,7 +2,8 @@ package grv.dvt.cilocks_gles20;
 
 public class CLKeySector {
 	
-	/** Distance from center along radial axis */
+	/** Relative distance from center along radial axis
+	 *  0 - initial position, 1 - fully unlocked */
 	private float mDistance;
 	
 	/** Sector color */
