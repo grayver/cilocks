@@ -5,13 +5,6 @@ package grv.dvt.cilocks_gles20;
  */
 public class CLSector {
 	
-	public enum State {
-		IDLE, SWAPPING
-	}
-	
-	
-	/** Sector state */
-	private CLSector.State mState;
 	
 	/** Sector rotation angle in radians (in terms of radial axis) */
 	private float mAngleRad;
@@ -33,16 +26,6 @@ public class CLSector {
 		
 		this.mAngleRad = 0.0f;
 		this.mAngleDeg = 0.0f;
-		
-		this.mState = CLSector.State.IDLE;
-	}
-	
-	public CLSector.State getState() {
-		return this.mState;
-	}
-	
-	public void setState(CLSector.State value) {
-		this.mState = value;
 	}
 	
 	public float getAngleRad() {
