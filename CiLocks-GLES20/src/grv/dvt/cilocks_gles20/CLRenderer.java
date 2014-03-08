@@ -23,7 +23,7 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 	private CLTextureContainer mTextureContainer;
 	private CLShaderContainer mShaderContainer;
 
-	private CLLock mCircleLock;
+	private CLGame mGame;
 
 	private int mLightHandle;
 	private int mMVPMatrixHandle;
@@ -71,7 +71,7 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 	private float[] mVPInvMatrix = new float[16];
 	
 	/** Light position in world coordinates. */
-	private float[] mLightPosition = new float[] { 0.0f, 0.0f, 0.3f, 1.0f };
+	private float[] mLightPosition = new float[] { 0.0f, 0.0f, 0.5f, 1.0f };
 	
 	/** Light position in view coordinates. */
 	private float[] mVLightPosition = new float[4];
@@ -92,12 +92,12 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 	private float[] mCircleBorders = new float[] { 0.338f, 0.558f, 0.777f, 0.996f };
 	
 	
-	public CLRenderer(Context context, CLLock circleLock) {
+	public CLRenderer(Context context, CLGame game) {
 		mMeshContainer = new CLMeshContainer(context);
 		mTextureContainer = new CLTextureContainer(context);
 		mShaderContainer = new CLShaderContainer(context);
 		
-		mCircleLock = circleLock;
+		mGame = game;
 		
 		mMatrixStack = new MatrixStack(3);
 	}
@@ -113,14 +113,15 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 		// Init model matrix
 		Matrix.setIdentityM(mModelMatrix, 0);
 		
-		synchronized (mCircleLock) {
-			for (int i = 0; i < mCircleLock.getCircleCount(); i++) {
-				CLCircle circle = mCircleLock.getCircle(i);
+		CLLock circleLock = mGame.getCircleLock();
+		synchronized (circleLock) {
+			for (int i = 0; i < circleLock.getCircleCount(); i++) {
+				CLCircle circle = circleLock.getCircle(i);
 				
 				mMatrixStack.push(mModelMatrix, 0);
 				Matrix.rotateM(mModelMatrix, 0, circle.getAngleDeg(), 0.0f, 0.0f, 1.0f);
 				
-				for (int j = 0; j < mCircleLock.getCircle(i).getSectorCount(); j++) {
+				for (int j = 0; j < circleLock.getCircle(i).getSectorCount(); j++) {
 					CLSector sector = circle.getSector(j);
 					
 					mMatrixStack.push(mModelMatrix, 0);
@@ -152,7 +153,7 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 				mMatrixStack.pop(mModelMatrix, 0);
 			}
 			
-			CLKeyCircle keyCircle = mCircleLock.getKeyCircle();
+			CLKeyCircle keyCircle = circleLock.getKeyCircle();
 			for (int i = 0; i < keyCircle.getSectorCount(); i++) {
 				CLKeySector keySector = keyCircle.getSector(i);
 				

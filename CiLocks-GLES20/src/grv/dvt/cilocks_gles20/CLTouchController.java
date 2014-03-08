@@ -31,7 +31,9 @@ public class CLTouchController {
 				/ (float) Math.sqrt(baseVector.x * baseVector.x + baseVector.y * baseVector.y);
 	}
 	
-	public void processVectors(CLTouchVectorField field, CLLock circleLock, CLGame game) {
+	public void processVectors(CLTouchVectorField field, CLGame game) {
+		CLLock circleLock = game.getCircleLock();
+		
 		if (game.getState() != CLGame.State.ACTIVE) {
 			for (int i = 0; i < field.getVectorCount(); i++)
 				field.getVector(i).action = CLTouchVectorField.VectorAction.DUMMY;
@@ -111,7 +113,7 @@ public class CLTouchController {
 										circle.setState(CLCircle.State.SWAPPING);
 										swapCircle.setState(CLCircle.State.SWAPPING);
 										
-										mView.getAnimationThread().addAnimator(
+										game.getAnimationThread().addAnimator(
 												new CLSwapAnimator(1000, circleLock, circle, swapCircle, sectorIndex, swapSectorIndex));
 									}
 								} else if (tangentialComponent < 0.0f && i > 0) {
@@ -123,7 +125,7 @@ public class CLTouchController {
 										circle.setState(CLCircle.State.SWAPPING);
 										swapCircle.setState(CLCircle.State.SWAPPING);
 										
-										mView.getAnimationThread().addAnimator(
+										game.getAnimationThread().addAnimator(
 												new CLSwapAnimator(1000, circleLock, swapCircle, circle, swapSectorIndex, sectorIndex));
 									}
 								}
@@ -151,7 +153,7 @@ public class CLTouchController {
 					} else if (touchCount == 0)
 						synchronized (circleLock) {
 							circle.setState(CLCircle.State.ANIMATING);
-							mView.getAnimationThread().addAnimator(new CLRollAnimator(200, circleLock, game, circle));
+							game.getAnimationThread().addAnimator(new CLRollAnimator(200, circleLock, game, circle));
 						}
 				}
 			}

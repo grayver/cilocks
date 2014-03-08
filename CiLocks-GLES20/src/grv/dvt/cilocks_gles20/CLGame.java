@@ -13,17 +13,49 @@ public class CLGame {
 	/** Game state */
 	private CLGame.State mState;
 	
-	/** Circle lock */
+	/** Own objects */
 	private CLLock mCircleLock;
+	private AnimationThread mAnimationThread;
 	
+	/** Reference objects */
 	private CLView mView;
 	
 	/** Constructor */
-	public CLGame(CLLock circleLock, CLView view) {
+	public CLGame(CLView view) {
 		mState = CLGame.State.ACTIVE;
 		
-		mCircleLock = circleLock;
+		// Test circle lock
+		int[][] colorIndexes = new int[][] {
+				{ 0, 1, 0, 0, 1, 1, 0, 1 },
+				{ 1, 0, 1, 0, 0, 1, 1, 0 },
+				{ 0, 1, 0, 0, 1, 1, 0, 1 } };
+		int[][] symbolIndexes = new int[][] {
+				{ 0, 1, 2, 1, 1, 0, 1, 2 },
+				{ 2, 0, 1, 2, 1, 1, 0, 1 },
+				{ 0, 1, 2, 1, 1, 0, 1, 2 } };
+		int[] keyColorIndexes = new int[] { 0, 1, 0, 1 };;
+		mCircleLock = new CLLock(3, 8, colorIndexes, symbolIndexes, 4, keyColorIndexes);
+		
 		mView = view;
+	}
+	
+	public void createContext() {
+		// create animation thread
+		mAnimationThread = new AnimationThread(mView);
+	}
+	
+	public void releaseContext() {
+		// release animation thread
+		boolean retry = true;
+		mAnimationThread.terminate();
+		while (retry) {
+			try {
+				mAnimationThread.join();
+				retry = false;
+			} catch (InterruptedException e) {
+				//
+			}
+		}
 	}
 	
 	public CLGame.State getState() {
@@ -38,11 +70,18 @@ public class CLGame {
 		if (mState == CLGame.State.ACTIVE) {
 			if (detectUnlock()) {
 				mState = CLGame.State.ANIMATING;
-				mView.getAnimationThread().addAnimator(new CLUnlockAnimator(200, mCircleLock, this));
+				mAnimationThread.addAnimator(new CLUnlockAnimator(200, mCircleLock, this));
 			}
 		}
 	}
 	
+	public CLLock getCircleLock() {
+		return mCircleLock;
+	}
+	
+	public AnimationThread getAnimationThread() {
+		return mAnimationThread;
+	}
 	
 	private boolean detectUnlock() {
 		int keyCount = mCircleLock.getKeyCircle().getSectorCount();

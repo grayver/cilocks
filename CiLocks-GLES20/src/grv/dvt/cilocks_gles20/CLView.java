@@ -13,13 +13,16 @@ public class CLView extends GLSurfaceView {
 	
 	private CLRenderer mRenderer;
 	private CLTouchVectorField mVectorField;
-	private CLLock mCircleLock;
 	private CLTouchController mTouchController;
 	private CLGame mGame;
-	private AnimationThread mAnimationThread;
+	
 	
 	public CLView(Context context) {
 		super(context);
+		
+		// Create game object
+		mGame = new CLGame(this);
+		
 		
 		// Request an OpenGL ES 2.0 compatible context.
 		setEGLContextClientVersion(2);
@@ -27,27 +30,14 @@ public class CLView extends GLSurfaceView {
 		// Set OpenGL configuration
 		setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 		
-		// Test circle lock
-		int[][] colorIndexes = new int[][] {
-				{ 0, 1, 0, 0, 1, 1, 0, 1 },
-				{ 1, 0, 1, 0, 0, 1, 1, 0 },
-				{ 0, 1, 0, 0, 1, 1, 0, 1 } };
-		int[][] symbolIndexes = new int[][] {
-				{ 0, 1, 2, 1, 1, 0, 1, 2 },
-				{ 2, 0, 1, 2, 1, 1, 0, 1 },
-				{ 0, 1, 2, 1, 1, 0, 1, 2 } };
-		int[] keyColorIndexes = new int[] { 0, 1, 0, 1 };;
-		mCircleLock = new CLLock(3, 8, colorIndexes, symbolIndexes, 4, keyColorIndexes);
-		
 		// Set renderer
-		mRenderer = new CLRenderer(context, mCircleLock);
+		mRenderer = new CLRenderer(context, mGame);
 		setRenderer(mRenderer);
 		
 		// Render the view only when there is a change in the drawing data
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		
-		
-		mGame = new CLGame(mCircleLock, this);
+		// Create game logic objects
 		mVectorField = new CLTouchVectorField();
 		mTouchController = new CLTouchController(3, mRenderer.getCircleBorders(), this);
 	}
@@ -59,16 +49,7 @@ public class CLView extends GLSurfaceView {
 		
 		mRenderer.releaseResources();
 		
-		boolean retry = true;
-		mAnimationThread.terminate();
-		while (retry) {
-			try {
-				mAnimationThread.join();
-				retry = false;
-			} catch (InterruptedException e) {
-				//
-			}
-		}
+		mGame.releaseContext();
 	}
 	
 	@Override
@@ -76,7 +57,7 @@ public class CLView extends GLSurfaceView {
 		Log.d(TAG, "Resuming..");
 		super.onResume();
 		
-		mAnimationThread = new AnimationThread(this);
+		mGame.createContext();
 	}
 	
 	@Override
@@ -93,24 +74,20 @@ public class CLView extends GLSurfaceView {
 		case MotionEvent.ACTION_UP:
 		case MotionEvent.ACTION_POINTER_UP:
 			mVectorField.releaseVector(MotionEventCompat.getPointerId(event, index));
-			mTouchController.processVectors(mVectorField, mCircleLock, mGame);
+			mTouchController.processVectors(mVectorField, mGame);
 			break;
 		case MotionEvent.ACTION_MOVE:
 			for (int i = 0; i < MotionEventCompat.getPointerCount(event); i++)
 				mVectorField.moveVector(MotionEventCompat.getPointerId(event, i),
 						mRenderer.getPointProjection(new PointF(MotionEventCompat.getX(event, i), MotionEventCompat.getY(event, i))));
-			mTouchController.processVectors(mVectorField, mCircleLock, mGame);
+			mTouchController.processVectors(mVectorField, mGame);
 			break;
 		case MotionEvent.ACTION_CANCEL:
 			this.mVectorField.clearField();
-			mTouchController.processVectors(mVectorField, mCircleLock, mGame);
+			mTouchController.processVectors(mVectorField, mGame);
 			break;
 		}
 
 		return true;
-	}
-	
-	public AnimationThread getAnimationThread() {
-		return mAnimationThread;
 	}
 }
