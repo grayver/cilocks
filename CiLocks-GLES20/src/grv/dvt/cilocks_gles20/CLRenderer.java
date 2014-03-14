@@ -70,11 +70,27 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 	/** Combined projection and view inverted matrix. */
 	private float[] mVPInvMatrix = new float[16];
 	
-	/** Light position in world coordinates. */
-	private float[] mLightPosition = new float[] { 0.0f, 0.0f, 0.5f, 1.0f };
 	
-	/** Light position in view coordinates. */
-	private float[] mVLightPosition = new float[4];
+	/** Center light position in world coordinates. */
+	private float[] mCenterLightPosition = new float[] { 0.0f, 0.0f, 0.5f, 1.0f };
+	
+	/** Center light position in view coordinates. */
+	private float[] mVCenterLightPosition = new float[4];
+	
+	/** Ring light parameters. Parameters packed as matrix
+	 *    [0] - ring center position
+	 *    [1] - ring normal direction
+	 *    [2] - ring radius vector (actually, only length of this vector needed */
+	private float[] mRingLightParams = new float[] {
+			0.0f, 0.0f, 0.5f, 1.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f
+	};
+	
+	/** Ring light parameters in view coordinates. */
+	private float[] mVRingLightParams = new float[16];
+	
 	
 	/** Camera position in world coordinates. */
 	private float[] mCameraPosition = new float[] { 0.0f, 0.0f, 9.0f, 1.0f };
@@ -108,7 +124,7 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 		
 		// Specify common uniform
-		GLES20.glUniform3fv(mLightHandle, 1, mVLightPosition, 0);
+		GLES20.glUniform3fv(mLightHandle, 1, mVCenterLightPosition, 0);
 		
 		// Init model matrix
 		Matrix.setIdentityM(mModelMatrix, 0);
@@ -215,7 +231,8 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 		
 		Log.d(TAG, String.format("Projection frustum. Left: %.2f right: %.2f bottom: %.2f top: %.2f near: %.2f far: %.2f",
 				left, right, bottom, top, near, far));
-		Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+		//Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+		Matrix.orthoM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
 		Matrix.invertM(mProjectionInvMatrix, 0, mProjectionMatrix, 0);
 		Matrix.multiplyMM(mVPInvMatrix, 0, mViewInvMatrix, 0, mProjectionInvMatrix, 0);
 	}
@@ -239,7 +256,8 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 		Matrix.multiplyMM(mVPInvMatrix, 0, mViewInvMatrix, 0, mProjectionInvMatrix, 0);
 		
 		// Set light position
-		Matrix.multiplyMV(mVLightPosition, 0, mViewMatrix, 0, mLightPosition, 0);
+		Matrix.multiplyMV(mVCenterLightPosition, 0, mViewMatrix, 0, mCenterLightPosition, 0);
+		Matrix.multiplyMM(mVRingLightParams, 0, mViewMatrix, 0, mRingLightParams, 0);
 		
 		// Load data and store handles
 		try {
