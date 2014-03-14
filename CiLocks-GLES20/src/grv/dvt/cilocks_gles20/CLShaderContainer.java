@@ -21,17 +21,18 @@ public class CLShaderContainer {
 	
 	private int mProgramHandle;
 
-	private int mLightHandle;
-	private int mMVPMatrixHandle;
-	private int mMVMatrixHandle;
-	private int mColorMapHandle;
-	private int mNormalMapHandle;
+	public int mCenterLightHandle;
+	public int mRingLightHandle;
+	public int mMVPMatrixHandle;
+	public int mMVMatrixHandle;
+	public int mColorMapHandle;
+	public int mNormalMapHandle;
 
-	private int mPositionHandle;
-	private int mUVHandle;
-	private int mNormalHandle;
-	private int mTangentHandle;
-	private int mBitangentHandle;
+	public int mPositionHandle;
+	public int mUVHandle;
+	public int mNormalHandle;
+	public int mTangentHandle;
+	public int mBitangentHandle;
 
 	private boolean mIsLoaded;
 
@@ -149,7 +150,8 @@ public class CLShaderContainer {
 		GLES20.glReleaseShaderCompiler();
 
 		// Set program handles. These will later be used to pass in values to the program.
-		mLightHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Light");
+		mCenterLightHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_CenterLight");
+		mRingLightHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_RingLight");
 		mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix");
 		mMVMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVMatrix");
 		mColorMapHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_ColorMap");
@@ -173,45 +175,5 @@ public class CLShaderContainer {
 			GLES20.glDeleteShader(mFragmentShaderHandle);
 			GLES20.glDeleteShader(mVertexShaderHandle);
 		}
-	}
-	
-	public int getLightHandle() {
-		return mLightHandle;
-	}
-	
-	public int getMVPMatrixHandle() {
-		return mMVPMatrixHandle;
-	}
-	
-	public int getMVMatrixHandle() {
-		return mMVMatrixHandle;
-	}
-	
-	public int getColorMapHandle() {
-		return mColorMapHandle;
-	}
-	
-	public int getNormalMapHandle() {
-		return mNormalMapHandle;
-	}
-	
-	public int getPositionHandle() {
-		return mPositionHandle;
-	}
-	
-	public int getUVHandle() {
-		return mUVHandle;
-	}
-	
-	public int getNormalHandle() {
-		return mNormalHandle;
-	}
-	
-	public int getTangentHandle() {
-		return mTangentHandle;
-	}
-	
-	public int getBitangentHandle() {
-		return mBitangentHandle;
 	}
 }

@@ -25,18 +25,6 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 
 	private CLGame mGame;
 
-	private int mLightHandle;
-	private int mMVPMatrixHandle;
-	private int mMVMatrixHandle;
-	private int mColorMapHandle;
-	private int mNormalMapHandle;
-
-	private int mPositionHandle;
-	private int mUVHandle;
-	private int mNormalHandle;
-	private int mTangentHandle;
-	private int mBitangentHandle;
-	
 	/** Matrix stack utility */
 	private MatrixStack mMatrixStack;
 	
@@ -124,7 +112,8 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 		
 		// Specify common uniform
-		GLES20.glUniform3fv(mLightHandle, 1, mVCenterLightPosition, 0);
+		GLES20.glUniform3fv(mShaderContainer.mCenterLightHandle, 1, mVCenterLightPosition, 0);
+		GLES20.glUniformMatrix4fv(mShaderContainer.mRingLightHandle, 1, false, mVRingLightParams, 0);
 		
 		// Init model matrix
 		Matrix.setIdentityM(mModelMatrix, 0);
@@ -153,15 +142,16 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 					Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVMatrix, 0);
 					
 					// Specify matrix uniforms
-					GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVMatrix, 0);
-					GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+					GLES20.glUniformMatrix4fv(mShaderContainer.mMVMatrixHandle, 1, false, mMVMatrix, 0);
+					GLES20.glUniformMatrix4fv(mShaderContainer.mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 					
 					// Specify texture uniforms
 					mTextureContainer.bindTextures(sector.getColorIndex(), sector.getSymbolIndex());
-					GLES20.glUniform1i(mColorMapHandle, 0);
-					GLES20.glUniform1i(mNormalMapHandle, 1);
+					GLES20.glUniform1i(mShaderContainer.mColorMapHandle, 0);
+					GLES20.glUniform1i(mShaderContainer.mNormalMapHandle, 1);
 					
-					mMeshContainer.drawCircleSector(i, j, mPositionHandle, mUVHandle, mNormalHandle, mTangentHandle, mBitangentHandle);
+					mMeshContainer.drawCircleSector(i, j, mShaderContainer.mPositionHandle, mShaderContainer.mUVHandle,
+							mShaderContainer.mNormalHandle, mShaderContainer.mTangentHandle, mShaderContainer.mBitangentHandle);
 					
 					mMatrixStack.pop(mModelMatrix, 0);
 				}
@@ -187,15 +177,16 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 				Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVMatrix, 0);
 				
 				// Specify matrix uniforms
-				GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVMatrix, 0);
-				GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+				GLES20.glUniformMatrix4fv(mShaderContainer.mMVMatrixHandle, 1, false, mMVMatrix, 0);
+				GLES20.glUniformMatrix4fv(mShaderContainer.mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 				
 				// Specify texture uniforms
 				mTextureContainer.bindTextures(keySector.getColorIndex(), 0);
-				GLES20.glUniform1i(mColorMapHandle, 0);
-				GLES20.glUniform1i(mNormalMapHandle, 1);
+				GLES20.glUniform1i(mShaderContainer.mColorMapHandle, 0);
+				GLES20.glUniform1i(mShaderContainer.mNormalMapHandle, 1);
 				
-				mMeshContainer.drawKeySector(i, mPositionHandle, mUVHandle, mNormalHandle, mTangentHandle, mBitangentHandle);
+				mMeshContainer.drawKeySector(i, mShaderContainer.mPositionHandle, mShaderContainer.mUVHandle,
+						mShaderContainer.mNormalHandle, mShaderContainer.mTangentHandle, mShaderContainer.mBitangentHandle);
 				
 				mMatrixStack.pop(mModelMatrix, 0);
 			}
@@ -265,18 +256,6 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 			mTextureContainer.loadTextures();
 			mShaderContainer.loadShaders();
 			System.gc();
-
-			mLightHandle = mShaderContainer.getLightHandle();
-			mMVPMatrixHandle = mShaderContainer.getMVPMatrixHandle();
-			mMVMatrixHandle = mShaderContainer.getMVMatrixHandle();
-			mColorMapHandle = mShaderContainer.getColorMapHandle();
-			mNormalMapHandle = mShaderContainer.getNormalMapHandle();
-
-			mPositionHandle = mShaderContainer.getPositionHandle();
-			mUVHandle = mShaderContainer.getUVHandle();
-			mNormalHandle = mShaderContainer.getNormalHandle();
-			mTangentHandle = mShaderContainer.getTangentHandle();
-			mBitangentHandle = mShaderContainer.getBitangentHandle();
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
 			throw new RuntimeException("Error loading resources.");

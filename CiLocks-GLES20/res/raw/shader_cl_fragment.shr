@@ -6,15 +6,23 @@ uniform sampler2D u_ColorMap;
 uniform sampler2D u_NormalMap;
 
 varying vec2 v_UV;
-varying vec3 v_Light;
-varying float v_Distance;
+varying vec3 v_CenterLight;
+varying float v_CenterDistance;
+varying vec3 v_RingLight;
+varying float v_RingDistance;
+
 
 void main()
 {
 	vec3 normal = normalize(texture2D(u_NormalMap, v_UV).rgb * 2.0 - 1.0);
 	
-	float diffuse = dot(normal, v_Light);
-	diffuse = clamp(diffuse * (1.0 / (1.0 + (0.25 * v_Distance * v_Distance))), 0.1, 1.0);
+	float centerDiffuse = dot(normal, v_CenterLight);
+	centerDiffuse = centerDiffuse / (1.0 + (0.25 * v_CenterDistance * v_CenterDistance)); // attenuation
 	
-	gl_FragColor = texture2D(u_ColorMap, v_UV) * diffuse;
+	float ringDiffuse = dot(normal, v_RingLight);
+	ringDiffuse = ringDiffuse / (1.0 + (0.25 * v_RingDistance * v_RingDistance)); // attenuation
+	
+	float totalDiffuse = clamp(ringDiffuse, 0.1, 1.0);
+	
+	gl_FragColor = texture2D(u_ColorMap, v_UV) * totalDiffuse;
 }
