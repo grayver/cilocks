@@ -44,9 +44,9 @@ void main()
 	v_CenterLight = TBN * normalize(u_CenterLight - position);
 	v_CenterDistance = distance(u_CenterLight, position);
 	
-	vec3 radialVector = position - vec3(u_RingLight[0]);
-	vec3 ringNormal = vec3(u_RingLight[1]);
-	vec3 ringLightPos = length(vec3(u_RingLight[0])) * normalize(radialVector - dot(radialVector, ringNormal) * ringNormal);
-	v_RingLight = TBN * normalize(ringLightPos - position);
-	v_RingDistance = distance(ringLightPos, position);
+	mat3 rl = mat3(u_RingLight);
+	vec3 radial = position - rl[0];
+	vec3 rlpos = rl[0] + length(rl[2]) * normalize(radial - dot(radial, rl[1]) * rl[1]);
+	v_RingLight = TBN * normalize(rlpos - position);
+	v_RingDistance = distance(rlpos, position);
 }
