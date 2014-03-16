@@ -26,14 +26,14 @@ public class CLGame {
 		
 		// Test circle lock
 		int[][] colorIndexes = new int[][] {
-				{ 0, 1, 0, 0, 1, 1, 0, 1 },
+				{ 3, 1, 0, 3, 1, 2, 3, 1 },
 				{ 1, 0, 1, 0, 0, 1, 1, 0 },
-				{ 0, 1, 0, 0, 1, 1, 0, 1 } };
+				{ 0, 1, 3, 0, 1, 1, 2, 1 } };
 		int[][] symbolIndexes = new int[][] {
 				{ 0, 1, 2, 1, 1, 0, 1, 2 },
 				{ 2, 0, 1, 2, 1, 1, 0, 1 },
 				{ 0, 1, 2, 1, 1, 0, 1, 2 } };
-		int[] keyColorIndexes = new int[] { 0, 1, 0, 1 };;
+		int[] keyColorIndexes = new int[] { 0, 1, 2, 3 };;
 		mCircleLock = new CLLock(3, 8, colorIndexes, symbolIndexes, 4, keyColorIndexes);
 		
 		mView = view;
