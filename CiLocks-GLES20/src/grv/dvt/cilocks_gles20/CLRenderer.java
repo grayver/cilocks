@@ -60,7 +60,7 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 	
 	
 	/** Center light position in world coordinates. */
-	private float[] mCenterLightPosition = new float[] { 0.0f, 0.0f, 0.5f, 1.0f };
+	private float[] mCenterLightPosition = new float[] { 0.0f, 0.0f, 0.3f, 1.0f };
 	
 	/** Center light position in view coordinates. */
 	private float[] mVCenterLightPosition = new float[4];
@@ -70,7 +70,7 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 	 *    [1] - ring normal direction
 	 *    [2] - ring radius vector (actually, only length of this vector needed */
 	private float[] mRingLightParams = new float[] {
-			0.0f, 0.0f, 0.3f, 1.0f,
+			0.0f, 0.0f, 0.5f, 1.0f,
 			0.0f, 0.0f, 1.0f, 0.0f,
 			1.3f, 0.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 0.0f

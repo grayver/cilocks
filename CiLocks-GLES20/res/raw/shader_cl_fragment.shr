@@ -22,7 +22,7 @@ void main()
 	float ringDiffuse = dot(normal, v_RingLight);
 	ringDiffuse = ringDiffuse / (1.0 + (0.25 * v_RingDistance * v_RingDistance)); // attenuation
 	
-	float totalDiffuse = clamp(ringDiffuse + 0.5 * centerDiffuse, 0.1, 1.0);
+	float totalDiffuse = clamp(0.5 * ringDiffuse + centerDiffuse, 0.1, 1.0);
 	
 	gl_FragColor = texture2D(u_ColorMap, v_UV) * totalDiffuse;
 }
