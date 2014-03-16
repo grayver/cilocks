@@ -16,6 +16,7 @@ varying vec3 v_CenterLight;
 varying float v_CenterDistance;
 varying vec3 v_RingLight;
 varying float v_RingDistance;
+varying vec3 v_Camera;
 
 
 void main()
@@ -49,4 +50,6 @@ void main()
 	vec3 rlpos = rl[0] + length(rl[2]) * normalize(radial - dot(radial, rl[1]) * rl[1]);
 	v_RingLight = TBN * normalize(rlpos - position);
 	v_RingDistance = distance(rlpos, position);
+	
+	v_Camera = TBN * normalize(-position);
 }

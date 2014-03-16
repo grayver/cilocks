@@ -10,19 +10,27 @@ varying vec3 v_CenterLight;
 varying float v_CenterDistance;
 varying vec3 v_RingLight;
 varying float v_RingDistance;
+varying vec3 v_Camera;
 
 
 void main()
 {
 	vec3 normal = normalize(texture2D(u_NormalMap, v_UV).rgb * 2.0 - 1.0);
+	vec4 texColor = texture2D(u_ColorMap, v_UV);
 	
-	float centerDiffuse = dot(normal, v_CenterLight);
-	centerDiffuse = centerDiffuse / (1.0 + (0.25 * v_CenterDistance * v_CenterDistance)); // attenuation
+	vec3 ambient = 0.1 * texColor.rgb;
 	
-	float ringDiffuse = dot(normal, v_RingLight);
-	ringDiffuse = ringDiffuse / (1.0 + (0.25 * v_RingDistance * v_RingDistance)); // attenuation
+	vec3 centerDiffuse = max(dot(normal, v_CenterLight), 0.0) * texColor.rgb;
+	vec3 ringDiffuse = max(dot(normal, v_RingLight), 0.0) * texColor.rgb;
 	
-	float totalDiffuse = clamp(0.5 * ringDiffuse + centerDiffuse, 0.1, 1.0);
+	vec3 matSpecColor = vec3(0.800, 0.913, 1.000);
+	float shininess = 80.0;
+	vec3 centerSpecular = pow(max(dot(v_Camera, reflect(-v_CenterLight, normal)), 0.0), shininess) * matSpecColor;
 	
-	gl_FragColor = texture2D(u_ColorMap, v_UV) * totalDiffuse;
+	float centerAttenuation = 1.0 / (1.0 + (0.25 * v_CenterDistance * v_CenterDistance));
+	float ringAttenuation = 1.0 / (1.0 + (0.25 * v_RingDistance * v_RingDistance));
+	
+	vec3 finalColor = ambient + centerAttenuation * (centerDiffuse + centerSpecular) + 0.5 * ringAttenuation * ringDiffuse;
+
+	gl_FragColor = vec4(finalColor, texColor.a);
 }
