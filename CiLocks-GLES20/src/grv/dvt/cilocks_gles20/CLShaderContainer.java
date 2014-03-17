@@ -21,8 +21,7 @@ public class CLShaderContainer {
 	
 	private int mProgramHandle;
 
-	public int mCenterLightHandle;
-	public int mRingLightHandle;
+	public int mLightMatrixHandle;
 	public int mMVPMatrixHandle;
 	public int mMVMatrixHandle;
 	public int mColorMapHandle;
@@ -116,7 +115,7 @@ public class CLShaderContainer {
 		
 		if (mProgramHandle != 0) {
 			// Bind the vertex shader to the program.
-			GLES20.glAttachShader(mProgramHandle, mVertexShaderHandle);			
+			GLES20.glAttachShader(mProgramHandle, mVertexShaderHandle);
 
 			// Bind the fragment shader to the program.
 			GLES20.glAttachShader(mProgramHandle, mFragmentShaderHandle);
@@ -136,7 +135,8 @@ public class CLShaderContainer {
 			GLES20.glGetProgramiv(mProgramHandle, GLES20.GL_LINK_STATUS, linkStatus, 0);
 
 			// If the link failed, delete the program.
-			if (linkStatus[0] == 0) {				
+			if (linkStatus[0] == 0) {
+				Log.d(TAG, "Program linking error: " + GLES20.glGetProgramInfoLog(mProgramHandle));
 				GLES20.glDeleteProgram(mProgramHandle);
 				mProgramHandle = 0;
 			}
@@ -150,8 +150,7 @@ public class CLShaderContainer {
 		GLES20.glReleaseShaderCompiler();
 
 		// Set program handles. These will later be used to pass in values to the program.
-		mCenterLightHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_CenterLight");
-		mRingLightHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_RingLight");
+		mLightMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Light");
 		mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix");
 		mMVMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVMatrix");
 		mColorMapHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_ColorMap");
