@@ -166,22 +166,25 @@ public class CLMeshContainer {
 		
 		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, bufferId);
 		
-		GLES20.glVertexAttribPointer(positionHandle, mPositionSize, GLES20.GL_FLOAT, false, mStrideBytes, mPositionOffset);
 		GLES20.glEnableVertexAttribArray(positionHandle);
-		
-		GLES20.glVertexAttribPointer(UVHandle, mUVSize, GLES20.GL_FLOAT, false, mStrideBytes, mUVOffset);
 		GLES20.glEnableVertexAttribArray(UVHandle);
-		
-		GLES20.glVertexAttribPointer(normalHandle, mNormalSize, GLES20.GL_FLOAT, false, mStrideBytes, mNormalOffset);
 		GLES20.glEnableVertexAttribArray(normalHandle);
-		
-		GLES20.glVertexAttribPointer(tangentHandle, mTangentSize, GLES20.GL_FLOAT, false, mStrideBytes, mTangentOffset);
 		GLES20.glEnableVertexAttribArray(tangentHandle);
-
-		GLES20.glVertexAttribPointer(bitangentHandle, mBitangentSize, GLES20.GL_FLOAT, false, mStrideBytes, mBitangentOffset);
 		GLES20.glEnableVertexAttribArray(bitangentHandle);
 		
+		GLES20.glVertexAttribPointer(positionHandle, mPositionSize, GLES20.GL_FLOAT, false, mStrideBytes, mPositionOffset);
+		GLES20.glVertexAttribPointer(UVHandle, mUVSize, GLES20.GL_FLOAT, false, mStrideBytes, mUVOffset);
+		GLES20.glVertexAttribPointer(normalHandle, mNormalSize, GLES20.GL_FLOAT, false, mStrideBytes, mNormalOffset);
+		GLES20.glVertexAttribPointer(tangentHandle, mTangentSize, GLES20.GL_FLOAT, false, mStrideBytes, mTangentOffset);
+		GLES20.glVertexAttribPointer(bitangentHandle, mBitangentSize, GLES20.GL_FLOAT, false, mStrideBytes, mBitangentOffset);
+		
 		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);
+		
+		GLES20.glDisableVertexAttribArray(positionHandle);
+		GLES20.glDisableVertexAttribArray(UVHandle);
+		GLES20.glDisableVertexAttribArray(normalHandle);
+		GLES20.glDisableVertexAttribArray(tangentHandle);
+		GLES20.glDisableVertexAttribArray(bitangentHandle);
 		
 		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 	}
