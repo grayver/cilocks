@@ -109,6 +109,8 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 		
 		// Specify common uniform
 		GLES20.glUniformMatrix4fv(mShaderContainer.mLightMatrixHandle, 1, false, mVLightMatrix, 0);
+		GLES20.glUniform1i(mShaderContainer.mColorMapHandle, 0);
+		GLES20.glUniform1i(mShaderContainer.mNormalMapHandle, 1);
 		
 		// Init model matrix
 		Matrix.setIdentityM(mModelMatrix, 0);
@@ -140,13 +142,13 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 					GLES20.glUniformMatrix4fv(mShaderContainer.mMVMatrixHandle, 1, false, mMVMatrix, 0);
 					GLES20.glUniformMatrix4fv(mShaderContainer.mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 					
-					// Specify texture uniforms
 					mTextureContainer.bindTextures(sector.getColorIndex(), sector.getSymbolIndex());
-					GLES20.glUniform1i(mShaderContainer.mColorMapHandle, 0);
-					GLES20.glUniform1i(mShaderContainer.mNormalMapHandle, 1);
 					
 					mMeshContainer.drawCircleSector(i, j, mShaderContainer.mPositionHandle, mShaderContainer.mUVHandle,
 							mShaderContainer.mNormalHandle, mShaderContainer.mTangentHandle, mShaderContainer.mBitangentHandle);
+					
+					// This may be useful to fix Adreno 200 texture bug
+					//mTextureContainer.unbindTextures();
 					
 					mMatrixStack.pop(mModelMatrix, 0);
 				}
@@ -175,13 +177,13 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 				GLES20.glUniformMatrix4fv(mShaderContainer.mMVMatrixHandle, 1, false, mMVMatrix, 0);
 				GLES20.glUniformMatrix4fv(mShaderContainer.mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 				
-				// Specify texture uniforms
 				mTextureContainer.bindTextures(keySector.getColorIndex(), 0);
-				GLES20.glUniform1i(mShaderContainer.mColorMapHandle, 0);
-				GLES20.glUniform1i(mShaderContainer.mNormalMapHandle, 1);
 				
 				mMeshContainer.drawKeySector(i, mShaderContainer.mPositionHandle, mShaderContainer.mUVHandle,
 						mShaderContainer.mNormalHandle, mShaderContainer.mTangentHandle, mShaderContainer.mBitangentHandle);
+				
+				// This may be useful to fix Adreno 200 texture bug
+				//mTextureContainer.unbindTextures();
 				
 				mMatrixStack.pop(mModelMatrix, 0);
 			}

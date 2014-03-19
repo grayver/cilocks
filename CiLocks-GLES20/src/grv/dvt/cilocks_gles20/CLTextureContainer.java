@@ -91,6 +91,14 @@ public class CLTextureContainer {
 		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mSymbolTextureIds[symbolIndex]);
 	}
 	
+	public void unbindTextures() {
+		GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+		
+		GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+	}
+	
 	public void releaseTextures() {
 		if (mIsLoaded) {
 			int[] flatTexIds = new int[mColorCount + mSymbolCount];

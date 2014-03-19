@@ -163,7 +163,6 @@ public class CLShaderContainer {
 		mBitangentHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Bitangent");
 
 		// Tell OpenGL to use this program when rendering.
-		GLES20.glUseProgram(0); // Adreno 200 hack
 		GLES20.glUseProgram(mProgramHandle);
 
 		mIsLoaded = true;
