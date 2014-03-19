@@ -23,14 +23,21 @@ void main()
 	vec3 sv_CenterDiffuse = dot(sv_Normal, v_CenterLight) * sv_TexColor.rgb;
 	vec3 sv_RingDiffuse = dot(sv_Normal, v_RingLight) * sv_TexColor.rgb;
 	
-	const vec3 sv_MatSpecColor = vec3(0.800, 0.913, 1.000);
+	float sv_SpecularCos = dot(v_Camera, reflect(-v_CenterLight, sv_Normal));
+	vec3 sv_CenterSpecular = sv_SpecularCos * sv_TexColor.rgb;
+	
+	const vec3 sv_MatHLColor = vec3(0.800, 0.913, 1.000);
 	const float sv_Shininess = 15.0;
-	vec3 sv_CenterSpecular = pow(max(dot(v_Camera, reflect(-v_CenterLight, sv_Normal)), 0.0), sv_Shininess) * sv_MatSpecColor;
+	vec3 sv_CenterHL = pow(max(sv_SpecularCos, 0.0), sv_Shininess) * sv_MatHLColor;
 	
 	float sv_CenterAttenuation = 1.0 / (1.0 + (0.25 * v_CenterDistance * v_CenterDistance));
 	float sv_RingAttenuation = 1.0 / (1.0 + (0.25 * v_RingDistance * v_RingDistance));
 	
-	vec3 sv_FinalColor = max(sv_Ambient + sv_CenterAttenuation * (sv_CenterDiffuse + 0.3 * sv_CenterSpecular) + 0.5 * sv_RingAttenuation * sv_RingDiffuse, sv_Ambient);
+	vec3 sv_FinalColor = max(
+			sv_Ambient
+			+ sv_CenterAttenuation * (0.2 * sv_CenterDiffuse + sv_CenterSpecular + 0.4 * sv_CenterHL)
+			+ 0.7 * sv_RingAttenuation * sv_RingDiffuse,
+		sv_Ambient);
 	
 	gl_FragColor = vec4(sv_FinalColor, sv_TexColor.a);
 }
