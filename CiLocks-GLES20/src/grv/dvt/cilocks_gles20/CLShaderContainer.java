@@ -111,7 +111,7 @@ public class CLShaderContainer {
 		}
 		
 		// Create a program object and store the handle to it.
-		int mProgramHandle = GLES20.glCreateProgram();
+		mProgramHandle = GLES20.glCreateProgram();
 		
 		if (mProgramHandle != 0) {
 			// Bind the vertex shader to the program.
