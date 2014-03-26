@@ -134,9 +134,10 @@ public class CLMeshContainer {
 			int resId = mContext.getResources().getIdentifier(resName, "raw", mContext.getPackageName());
 			GZIPInputStream zis = new GZIPInputStream(mContext.getResources().openRawResource(resId));
 			
-			byte[] buffer = new byte[zis.available()];
-			zis.read(buffer, 0, buffer.length);
-			os.write(buffer);
+			byte[] buffer = new byte[4096];
+			int readCount = 0;
+			while ((readCount = zis.read(buffer, 0, buffer.length)) > 0)
+				os.write(buffer, 0, readCount);
 			
 			zis.close();
 			os.close();

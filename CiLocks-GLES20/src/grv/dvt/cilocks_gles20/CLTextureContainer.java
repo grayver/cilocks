@@ -45,7 +45,7 @@ public class CLTextureContainer {
 		InputStream is = mContext.getResources().openRawResource(resId);
 		
 		if (isCompressed) {
-			ETC1Util.loadTexture(GLES20.GL_TEXTURE_2D, 0, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_SHORT_5_6_5, is);
+			ETC1Util.loadTexture(GLES20.GL_TEXTURE_2D, 0, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_BYTE, is);
 		} else {
 			Bitmap bm = BitmapFactory.decodeStream(is);
 			
@@ -55,16 +55,16 @@ public class CLTextureContainer {
 			
 			bm.recycle();
 			bm = null;
-			
-			GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 		}
-
+		
 		is.close();
 		
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_NEAREST);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+		
+		GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 		
 		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
 	}
