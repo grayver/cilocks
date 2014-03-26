@@ -1,10 +1,13 @@
 package grv.dvt.cilocks_gles20;
 
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.zip.GZIPInputStream;
 
 import android.content.Context;
 import android.opengl.GLES20;
@@ -121,8 +124,25 @@ public class CLMeshContainer {
 	}
 	
 	public void loadMeshes() throws IOException {
-		int resId = mContext.getResources().getIdentifier("mesh_3x8x4", "raw", mContext.getPackageName());
-		DataInputStream is = new DataInputStream(mContext.getResources().openRawResource(resId));
+		String resName = "mesh_3x8x4";
+		String filename = String.format("%s.bin", resName);
+		
+		// check if data has already been extracted and cached
+		File file = mContext.getFileStreamPath(filename);
+		if (!file.exists()) {
+			FileOutputStream os = mContext.openFileOutput(filename, Context.MODE_PRIVATE);
+			int resId = mContext.getResources().getIdentifier(resName, "raw", mContext.getPackageName());
+			GZIPInputStream zis = new GZIPInputStream(mContext.getResources().openRawResource(resId));
+			
+			byte[] buffer = new byte[zis.available()];
+			zis.read(buffer, 0, buffer.length);
+			os.write(buffer);
+			
+			zis.close();
+			os.close();
+		}
+		
+		DataInputStream is = new DataInputStream(mContext.openFileInput(filename));
 		
 		mCircleCount = is.readInt();
 		mSectorCount = is.readInt();
