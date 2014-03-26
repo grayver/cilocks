@@ -7,6 +7,7 @@ import java.util.Locale;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.opengl.ETC1Util;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
@@ -36,27 +37,34 @@ public class CLTextureContainer {
 		mIsLoaded = false;
 	}
 	
-	private void loadTexture(int texId, String resName) throws IOException {
+	private void loadTexture(int texId, String resName, boolean isCompressed) throws IOException {
 		int resId = mContext.getResources().getIdentifier(resName, "raw", mContext.getPackageName());
 		
-		InputStream is = mContext.getResources().openRawResource(resId);
-		Bitmap bm = BitmapFactory.decodeStream(is);
-		is.close();
-		
 		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
-		int format = GLUtils.getInternalFormat(bm);
-		int type = GLUtils.getType(bm);
-		GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, format, bm, type, 0);
 		
-		bm.recycle();
-		bm = null;
+		InputStream is = mContext.getResources().openRawResource(resId);
+		
+		if (isCompressed) {
+			ETC1Util.loadTexture(GLES20.GL_TEXTURE_2D, 0, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_SHORT_5_6_5, is);
+		} else {
+			Bitmap bm = BitmapFactory.decodeStream(is);
+			
+			int format = GLUtils.getInternalFormat(bm);
+			int type = GLUtils.getType(bm);
+			GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, format, bm, type, 0);
+			
+			bm.recycle();
+			bm = null;
+			
+			GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+		}
+
+		is.close();
 		
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_NEAREST);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-		
-		GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 		
 		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
 	}
@@ -68,7 +76,7 @@ public class CLTextureContainer {
 		
 		for (int i = 0; i < mColorCount; i++) {
 			String resName = String.format(Locale.ENGLISH, "texture_stone%d", i + 1);
-			loadTexture(flatTexIds[counter], resName);
+			loadTexture(flatTexIds[counter], resName, true);
 			
 			mColorTextureIds[i] = flatTexIds[counter];
 			counter++;
@@ -76,7 +84,7 @@ public class CLTextureContainer {
 		
 		for (int i = 0; i < mSymbolCount; i++) {
 			String resName = String.format(Locale.ENGLISH, "texture_symbol%d", i + 1);
-			loadTexture(flatTexIds[counter], resName);
+			loadTexture(flatTexIds[counter], resName, false);
 			
 			mSymbolTextureIds[i] = flatTexIds[counter];
 			counter++;
