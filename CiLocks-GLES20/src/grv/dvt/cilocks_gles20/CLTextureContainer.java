@@ -75,7 +75,7 @@ public class CLTextureContainer {
 		int counter = 0;
 		
 		for (int i = 0; i < mColorCount; i++) {
-			String resName = String.format(Locale.ENGLISH, "texture_stone%d", i + 1);
+			String resName = String.format(Locale.ENGLISH, "texture_metal%d", i + 1);
 			loadTexture(flatTexIds[counter], resName, true);
 			
 			mColorTextureIds[i] = flatTexIds[counter];

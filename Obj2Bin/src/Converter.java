@@ -165,7 +165,7 @@ public class Converter {
 		//	return;
 		
 		//String filename = args[0];
-		String filename = "D:\\Development\\Android\\Model\\mycircles.obj";
+		String filename = "D:\\Development\\Android\\Model\\mycircles2.obj";
 		//String filename = "D:\\Dropbox\\CircleLocks\\model\\mycircles.obj";
 		objName = null;
 		

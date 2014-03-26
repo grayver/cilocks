@@ -84,12 +84,12 @@ public class CLRenderer implements GLSurfaceView.Renderer {
 	 * Infrastructure for touch point projection.
 	 */
 	private float[] mTouchPlaneNormal = new float[] { 0.0f, 0.0f, 1.0f };
-	private float[] mTouchPlanePoint = new float[] { 0.0f, 0.0f, 0.0485f };
+	private float[] mTouchPlanePoint = new float[] { 0.0f, 0.0f, 0.05f };
 	
 	/**
 	 * Infrastructure for circle collision detection
 	 */
-	private float[] mCircleBorders = new float[] { 0.338f, 0.558f, 0.777f, 0.996f };
+	private float[] mCircleBorders = new float[] { 0.32f, 0.545f, 0.775f, 1.00f };
 	
 	
 	public CLRenderer(Context context, CLGame game) {
