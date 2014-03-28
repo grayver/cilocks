@@ -10,7 +10,7 @@ public class Aggregator {
 
 	public static void main(String[] args) {
 		try {
-			String inputFilenameMask = "in/texture_metal%d_mip%d.pkm";
+			String inputFilenameMask = "in/texture_metal%d_mip_%d.pkm";
 			String outputFilenameMask = "out/texture_metal%d.etc1";
 			
 			for (int i = 0; i < mTextureCount; i++) {
