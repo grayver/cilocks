@@ -1,5 +1,6 @@
 package grv.dvt.cilocks_gles20;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
@@ -45,7 +46,11 @@ public class CLTextureContainer {
 		InputStream is = mContext.getResources().openRawResource(resId);
 		
 		if (isCompressed) {
-			ETC1Util.loadTexture(GLES20.GL_TEXTURE_2D, 0, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_BYTE, is);
+			DataInputStream dis = new DataInputStream(is);
+			
+			int maxLevel = dis.readInt();
+			for (int level = 0; level <= maxLevel; level++)
+				ETC1Util.loadTexture(GLES20.GL_TEXTURE_2D, level, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_BYTE, dis);
 		} else {
 			Bitmap bm = BitmapFactory.decodeStream(is);
 			
@@ -55,6 +60,8 @@ public class CLTextureContainer {
 			
 			bm.recycle();
 			bm = null;
+			
+			GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 		}
 		
 		is.close();
@@ -63,8 +70,6 @@ public class CLTextureContainer {
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-		
-		GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 		
 		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
 	}
